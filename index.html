@@ -55,6 +55,33 @@
             margin-bottom: 20px;
         }
 
+        /* Área de Mensagem e Botão */
+        #login-form-area {
+            min-height: 100px; /* Garante espaço para a mensagem */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #player-status-message {
+            color: blue; 
+            margin-top: 15px;
+            min-height: 20px; /* Para evitar pulos de tela */
+        }
+
+        #view-results-button {
+            display: none; /* Começa escondido */
+            background-color: #007bff;
+        }
+
+
         /* TELA DE JOGO */
         #game-screen {
             display: none; 
@@ -414,7 +441,7 @@
         
         @keyframes zoom-in {
             0% { transform: scale(0.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1); }
         }
         
         @keyframes fade-out {
@@ -536,11 +563,15 @@
             <img src="https://i.imgur.com/kK3k4kx.png" alt="Logo do Restaurante" class="logo">
             <h1>Atividade do Restaurante: Jogo das Receitas</h1>
             <p>Insira seu Nickname para começar o desafio!</p>
-            <div id="login-form">
-                <input type="text" id="nickname-input" placeholder="Seu Nickname" maxlength="15">
-                <button id="start-game-button" disabled>Começar</button>
+            
+            <div id="login-form-area">
+                <div id="login-form">
+                    <input type="text" id="nickname-input" placeholder="Seu Nickname" maxlength="15">
+                    <button id="start-game-button" disabled>Começar</button>
+                </div>
+                <p id="player-status-message"></p>
+                <button id="view-results-button" style="display:none;">Ver Resultado</button>
             </div>
-            <p id="player-status-message" style="color: blue; margin-top: 15px;"></p>
         </div>
 
         <div id="game-screen">
@@ -579,22 +610,20 @@
             
             <div id="final-results">
                 <h2>Seu Resultado</h2>
-                <p><strong>Nickname:</strong> <span id="res-nick"></span></p>
-                <p><strong>Receitas Feitas:</strong> <span id="res-recipes"></span></p>
-                <p><strong>Tempo Total:</strong> <span id="res-time"></span></p>
-                <p><strong>Data/Hora de Conclusão:</strong> <span id="res-date"></span></p>
-                <button id="save-results-button" style="display: block; width: 100%;">Salvar Resultado e Ver Pódio</button>
+                <p id="player-previous-result"></p>
+                <button id="start-new-game-button" style="display: block; width: 100%; margin-top: 10px;">Iniciar Novo Jogo</button>
+                <button id="save-results-button" style="display: none; width: 100%;">Salvar Resultado e Ver Pódio</button>
             </div>
             
             <div id="scoreboard">
                 <div id="podium-section" class="score-list">
-                    <h3>🏆 Pódio (Envios Mais Rápidos) 🏆</h3>
+                    <h3>🏆 Pódio (Primeiros Envios) 🏆</h3>
                     </div>
                 <div id="all-times-section" class="score-list">
-                    <h3>⏱️ Todos os Tempos ⏱️</h3>
+                    <h3>⏱️ Todos os Envios (Primeiro ao Mais Recente) ⏱️</h3>
                     </div>
             </div>
-            <p style="text-align: center; margin-top: 30px; font-size: 0.9em;">*O pódio é baseado no tempo de envio. Em caso de empate, o tempo do jogo define a classificação.</p>
+            <p style="text-align: center; margin-top: 30px; font-size: 0.9em;">*A classificação é feita pela ordem cronológica de envio (do primeiro ao mais recente).</p>
         </div>
         
         <div id="recipe-popup" style="display:none;"></div>
@@ -637,13 +666,13 @@
             </div>
             
             <div id="admin-podium-view" style="display:none;">
-                <h2>Pódio e Histórico (Por Tempo)</h2>
+                <h2>Pódio e Histórico (Por Ordem de Envio)</h2>
                 <div class="admin-podium-view">
                     <div id="admin-podium-section" class="admin-podium-section score-list">
-                        <h3>🏆 Pódio (Top 3) 🏆</h3>
+                        <h3>🏆 Pódio (Top 3 Envios) 🏆</h3>
                     </div>
                     <div id="admin-all-times-section" class="admin-all-times-section score-list">
-                        <h3>⏱️ Todos os Tempos (Ordem de Tempo) ⏱️</h3>
+                        <h3>⏱️ Todos os Envios (Ordem de Envio) ⏱️</h3>
                     </div>
                 </div>
                 <button onclick="closeAdminPodium()">Voltar</button>
@@ -691,8 +720,9 @@
 
     <script>
         // ATENÇÃO: SUBSTITUA COM SUAS PRÓPRIAS CHAVES DO FIREBASE
+        // Use as chaves do seu arquivo: image_eaeca1.png
         const firebaseConfig = {
-            apiKey: "AIzaSyD0f60PyH7r2b13Py4DbDixudkb1GJam5BA", // EXEMPLO: SUBSTITUA!
+            apiKey: "AIzaSyD0f60PyH7r2b13Py4DbDixudkb1GJam5BA", // SUBSTITUA!
             authDomain: "jogoreceitas-3a179.firebaseapp.com",
             projectId: "jogoreceitas-3a179",
             storageBucket: "jogoreceitas-3a179.firebaseapp.com",
@@ -717,7 +747,7 @@
             'macarrao_almondegas': { name: 'Macarrão c/ Almôndegas', ingredients: ['Macarrão', 'Molho de tomate', 'Almôndegas'], image: 'https://i.imgur.com/Ba3SSsy.png' },
             'prato_feito': { name: 'Prato Feito (PF)', ingredients: ['Arroz', 'Feijão', 'Bife'], image: 'https://i.imgur.com/Lz1KNJ5.png' },
             'hamburguer_fritas': { name: 'Hambúrguer com Fritas', ingredients: ['Hambúrguer', 'Batata frita'], image: 'https://i.imgur.com/6RYgBZV.png' },
-            'bacon_ovos': { name: 'Bacon com Ovos', ingredients: ['Ovos', 'Bacon'], image: 'https://i.imgur.com/uQnXSnh.png' } // NOVA RECEITA
+            'bacon_ovos': { name: 'Bacon com Ovos', ingredients: ['Ovos', 'Bacon'], image: 'https://i.imgur.com/uQnXSnh.png' } 
         };
 
         const ALL_INGREDIENTS_DATA = {
@@ -757,6 +787,7 @@
         let gameTimeInSeconds = 0;
         let timerInterval = null;
         let finishDate = null;
+        let playerPlayedBefore = false; // Novo flag
 
         const loginScreen = document.getElementById('login-screen');
         const gameScreen = document.getElementById('game-screen');
@@ -764,6 +795,9 @@
         const nicknameInput = document.getElementById('nickname-input');
         const startGameButton = document.getElementById('start-game-button');
         const playerStatusMessage = document.getElementById('player-status-message');
+        const viewResultsButton = document.getElementById('view-results-button'); // Novo botão
+        const startNewGameButton = document.getElementById('start-new-game-button'); // Novo botão na tela de resultados
+        const playerPreviousResult = document.getElementById('player-previous-result'); // Novo elemento de exibição de resultado
         const timerDisplay = document.getElementById('timer');
         
         const potDropzone = document.getElementById('pot-dropzone');
@@ -1040,10 +1074,12 @@
             nicknameInput.value = '';
         }
 
+        // FUNÇÃO DE FORMATAÇÃO DE DATA/HORA COM SEGUNDOS (USADA NO ADMIN)
         function formatTimestamp(timestamp) {
             if (timestamp && timestamp.toDate) {
                 const date = timestamp.toDate();
                 const d = date.toLocaleDateString('pt-BR');
+                // Alteração garantida: hour, minute E second
                 const t = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 return `${d} ${t}`;
             }
@@ -1054,8 +1090,9 @@
             targetElement.innerHTML = '<p>Carregando scores...</p>';
             
             try {
+                // **CORREÇÃO APLICADA: ORDENAR POR SUBMITTEDAT (ORDEM DE ENVIO) PARA O HISTÓRICO**
                 const snapshot = await db.collection(collectionName)
-                                         .orderBy('submittedAt', 'desc') 
+                                         .orderBy('submittedAt', 'asc') // Ordem cronológica crescente
                                          .get();
                 
                 let html = '';
@@ -1067,6 +1104,7 @@
                         const docId = doc.id;
                         const timeStr = data.timeFormatted || formatTime(data.timeInSeconds || 0);
                         const recipes = data.recipesCompleted || 0;
+                        // Usa a função de formatação com segundos
                         const submittedAt = formatTimestamp(data.submittedAt || data.deletedAt);
                         
                         let actionButton;
@@ -1197,12 +1235,13 @@
             scoreListContainer.style.display = 'none';
             adminPodiumView.style.display = 'block';
             
-            adminPodiumSection.innerHTML = '<h3>🏆 Pódio (Top 3) 🏆</h3><p>Carregando...</p>';
-            adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos (Ordem de Tempo) ⏱️</h3><p>Carregando...</p>';
+            adminPodiumSection.innerHTML = '<h3>🏆 Pódio (Top 3 Envios) 🏆</h3><p>Carregando...</p>';
+            adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Envios (Ordem de Envio) ⏱️</h3><p>Carregando...</p>';
             
             try {
+                // **CORREÇÃO APLICADA: ORDENAR POR SUBMITTEDAT (ORDEM DE ENVIO) PARA O PÓDIO ADMIN**
                 const podiumSnapshot = await db.collection('scores')
-                                         .orderBy('timeInSeconds', 'asc')
+                                         .orderBy('submittedAt', 'asc') // Ordem cronológica crescente
                                          .get();
                 
                 let allScores = [];
@@ -1216,8 +1255,8 @@
                     });
                 });
 
-                adminPodiumSection.innerHTML = '<h3>🏆 Pódio (Top 3) 🏆</h3>';
-                adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos (Ordem de Tempo) ⏱️</h3>';
+                adminPodiumSection.innerHTML = '<h3>🏆 Pódio (Top 3 Envios) 🏆</h3>';
+                adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Envios (Ordem de Envio) ⏱️</h3>';
                 
                 if (allScores.length === 0) {
                     adminPodiumSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
@@ -1255,6 +1294,23 @@
         }
 
         // --- FUNÇÕES DE CONEXÃO COM FIREBASE ---
+        
+        // NOVO: Verifica se o usuário já tem um score finalizado
+        async function checkIfUserHasPlayed(nick) {
+            try {
+                const snapshot = await db.collection('scores')
+                                         .where('nick', '==', nick)
+                                         .get();
+                
+                // Retorna true se houver pelo menos 1 score finalizado
+                return snapshot.size > 0;
+
+            } catch (error) {
+                console.error("Erro ao verificar histórico de score:", error);
+                return false; 
+            }
+        }
+        
         async function loadPlayerProgress(nick) {
             try {
                 const docRef = db.collection('jogadores').doc(nick);
@@ -1301,18 +1357,20 @@
             resultsScreen.style.alignItems = 'center';
             resultsScreen.style.justifyContent = 'center';
 
+            // Esconde os elementos de resultado anterior e exibe os de resultado novo
+            playerPreviousResult.innerHTML = '';
             document.getElementById('res-nick').textContent = playerName;
             document.getElementById('res-recipes').textContent = `${recipesCompleted.length}/${Object.keys(ALL_RECIPES).length}`;
             document.getElementById('res-time').textContent = formatTime(gameTimeInSeconds);
             
-            // --- ALTERAÇÃO SOLICITADA: EXIBIR HORA, MINUTO E SEGUNDO ---
             document.getElementById('res-date').textContent = finishDate.toLocaleDateString('pt-BR') + ' ' + finishDate.toLocaleTimeString('pt-BR', {
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit' 
             });
-            // -------------------------------------------------------------
             
+            saveResultsButton.style.display = 'block';
+            startNewGameButton.style.display = 'none';
             saveResultsButton.disabled = false;
         }
 
@@ -1338,6 +1396,10 @@
                 alert("Resultado salvo com sucesso! Carregando pódio...");
                 await loadScoreboard();
                 saveResultsButton.textContent = "Resultado Salvo!";
+                
+                // Depois de salvar, atualiza o status do jogador
+                playerPlayedBefore = true; 
+
             } catch (error) {
                 console.error("Erro ao salvar o score final:", error);
                 alert("Erro ao salvar o resultado. Tente novamente.");
@@ -1347,12 +1409,14 @@
         }
         
         async function loadScoreboard() {
-            podiumSection.innerHTML = '<h3>🏆 Pódio (Envios Mais Rápidos) 🏆</h3><p>Carregando...</p>';
-            allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos ⏱️</h3><p>Carregando...</p>';
+            podiumSection.innerHTML = '<h3>🏆 Pódio (Primeiros Envios) 🏆</h3><p>Carregando...</p>';
+            allTimesSection.innerHTML = '<h3>⏱️ Todos os Envios (Primeiro ao Mais Recente) ⏱️</h3><p>Carregando...</p>';
             
             try {
+                // **CORREÇÃO CRUCIAL APLICADA AQUI:**
+                // Ordena por 'submittedAt' em ordem crescente ('asc'), garantindo que o PRIMEIRO ENVIO fique em 1º
                 const snapshot = await db.collection('scores')
-                                         .orderBy('timeInSeconds', 'asc')
+                                         .orderBy('submittedAt', 'asc') 
                                          .get();
                 
                 let allScores = [];
@@ -1360,23 +1424,21 @@
                     const data = doc.data();
                     const date = data.submittedAt ? data.submittedAt.toDate() : new Date();
                     
-                    // --- ALTERAÇÃO SOLICITADA: FORMATAR DATA E HORA COM SEGUNDOS ---
                     const formattedDateTime = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {
                         hour: '2-digit',
                         minute: '2-digit',
-                        second: '2-digit'
+                        second: '2-digit' 
                     });
-                    // ----------------------------------------------------------------
 
                     allScores.push({
                         nick: data.nick,
                         timeFormatted: data.timeFormatted || formatTime(data.timeInSeconds || 0),
-                        submittedAt: formattedDateTime,
+                        submittedAt: formattedDateTime, 
                         timeInSeconds: data.timeInSeconds
                     });
                 });
 
-                podiumSection.innerHTML = '<h3>🏆 Pódio (Envios Mais Rápidos) 🏆</h3>';
+                podiumSection.innerHTML = '<h3>🏆 Pódio (Primeiros Envios) 🏆</h3>';
                 if (allScores.length === 0) {
                     podiumSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
                 } else {
@@ -1384,23 +1446,24 @@
                         const score = allScores[i];
                         podiumSection.innerHTML += `
                             <div class="podium-item ${['gold', 'silver', 'bronze'][i]}">
-                                <strong>${['🥇 1º Lugar (Ouro)', '🥈 2º Lugar (Prata)', '🥉 3º Lugar (Bronze)'][i]}</strong>: ${score.nick}<br>
+                                <strong>${['🥇 1º Envio', '🥈 2º Envio', '🥉 3º Envio'][i]}</strong>: ${score.nick}<br>
                                 Tempo de Jogo: ${score.timeFormatted}
                             </div>
                         `;
                     }
                 }
 
-                allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos (Melhores Tempos) ⏱️</h3>';
+                allTimesSection.innerHTML = '<h3>⏱️ Todos os Envios (Primeiro ao Mais Recente) ⏱️</h3>';
                 if (allScores.length === 0) {
                     allTimesSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
                 } else {
-                    allScores.forEach(score => {
+                    allScores.forEach((score, index) => {
                         allTimesSection.innerHTML += `
                             <div class="all-times-item">
-                                <div><strong>${score.nick}</strong></div>
-                                <div>${score.timeFormatted}</div>
-                                <div style="font-size: 0.8em; color: #bbb;">${score.submittedAt}</div>
+                                <div style="width: 15%;">#${index + 1}</div>
+                                <div style="width: 30%;"><strong>${score.nick}</strong></div>
+                                <div style="width: 20%;">${score.timeFormatted}</div>
+                                <div style="width: 35%; font-size: 0.8em; color: #bbb;">${score.submittedAt}</div>
                             </div>
                         `;
                     });
@@ -1412,6 +1475,63 @@
                 podiumSection.innerHTML = '<h3>🏆 Pódio</h3><p>Erro ao carregar o placar.</p>';
                 allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos</h3><p>Erro ao carregar os tempos.</p>';
             }
+        }
+        
+        // NOVO: Função para exibir resultados anteriores
+        async function showPreviousResults(nick) {
+            
+            loginScreen.style.display = 'none';
+            gameScreen.style.display = 'none';
+            adminPanel.style.display = 'none';
+            
+            resultsScreen.style.display = 'flex'; 
+            resultsScreen.style.flexDirection = 'column';
+            resultsScreen.style.alignItems = 'center';
+            resultsScreen.style.justifyContent = 'center';
+
+            // Esconde elementos de novo score e exibe o de score anterior
+            saveResultsButton.style.display = 'none';
+            startNewGameButton.style.display = 'block';
+
+            document.getElementById('res-nick').textContent = nick;
+            document.getElementById('res-recipes').textContent = 'N/A';
+            document.getElementById('res-time').textContent = 'N/A';
+            document.getElementById('res-date').textContent = 'N/A';
+
+            playerPreviousResult.innerHTML = `<p>Buscando seu melhor resultado...</p>`;
+
+
+            try {
+                // Busca o melhor score (menor tempo) do jogador
+                const snapshot = await db.collection('scores')
+                                         .where('nick', '==', nick)
+                                         .orderBy('timeInSeconds', 'asc') // Pega o melhor tempo de jogo dele
+                                         .limit(1)
+                                         .get();
+
+                if (!snapshot.empty) {
+                    const data = snapshot.docs[0].data();
+                    const date = data.submittedAt ? data.submittedAt.toDate() : new Date();
+                    const formattedDateTime = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {
+                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    });
+
+                    playerPreviousResult.innerHTML = `
+                        <p>Seu **melhor tempo de jogo** registrado:</p>
+                        <p><strong>Tempo:</strong> ${data.timeFormatted}</p>
+                        <p><strong>Receitas:</strong> ${data.recipesCompleted}/${WIN_COUNT}</p>
+                        <p><strong>Envio:</strong> ${formattedDateTime}</p>
+                    `;
+                    
+                } else {
+                    playerPreviousResult.innerHTML = `<p>Não foi encontrado um score finalizado para ${nick}.</p>`;
+                }
+            } catch (error) {
+                console.error("Erro ao carregar resultado anterior:", error);
+                playerPreviousResult.innerHTML = `<p>Erro ao carregar seu resultado.</p>`;
+            }
+
+            loadScoreboard();
         }
 
         // --- INICIALIZAÇÃO E LISTENERS ---
@@ -1442,8 +1562,31 @@
         }
 
         function attachListeners() {
-            nicknameInput.addEventListener('input', () => {
-                startGameButton.disabled = nicknameInput.value.trim().length === 0;
+            nicknameInput.addEventListener('input', async () => {
+                const nick = nicknameInput.value.trim();
+                startGameButton.disabled = nick.length === 0;
+                
+                if (nick.length > 0 && nick !== ADMIN_NICK) {
+                    playerPlayedBefore = await checkIfUserHasPlayed(nick);
+                    
+                    if (playerPlayedBefore) {
+                        playerStatusMessage.textContent = `Usuário cadastrado com um score finalizado.`;
+                        viewResultsButton.style.display = 'block';
+                        startGameButton.textContent = 'Começar Novo Jogo';
+                    } else {
+                        playerStatusMessage.textContent = ``;
+                        viewResultsButton.style.display = 'none';
+                        startGameButton.textContent = 'Começar';
+                    }
+                } else if (nick === ADMIN_NICK) {
+                    playerStatusMessage.textContent = '';
+                    viewResultsButton.style.display = 'none';
+                    startGameButton.textContent = 'Acessar Admin';
+                } else {
+                    playerStatusMessage.textContent = '';
+                    viewResultsButton.style.display = 'none';
+                    startGameButton.textContent = 'Começar';
+                }
             });
             
             startGameButton.addEventListener('click', async () => {
@@ -1455,6 +1598,7 @@
                 }
 
                 if (playerName) {
+                    // O fluxo de "Começar" sempre inicia o jogo, independentemente do score anterior
                     await loadPlayerProgress(playerName);
                     
                     await initializeAudio(); 
@@ -1466,6 +1610,23 @@
                     statusText.textContent = `Olá, Chef ${playerName}! Faça ${WIN_COUNT} receitas!`;
                     initializeGame();
                 }
+            });
+            
+            // NOVO LISTENER: Botão "Ver Resultado"
+            viewResultsButton.addEventListener('click', () => {
+                const nick = nicknameInput.value.trim();
+                if (nick) {
+                    playerName = nick; // Define o nick atual
+                    showPreviousResults(playerName);
+                }
+            });
+
+            // NOVO LISTENER: Botão "Iniciar Novo Jogo" na tela de resultados
+            startNewGameButton.addEventListener('click', () => {
+                // Volta para a tela de login, mas mantém o nick para facilitar
+                resultsScreen.style.display = 'none';
+                loginScreen.style.display = 'block';
+                // O input listener cuidará de reexibir a mensagem/botão, se necessário.
             });
             
             // Listeners do Admin Login
