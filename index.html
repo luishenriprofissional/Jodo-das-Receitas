@@ -13,6 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-firestore-compat.js"></script> 
     
     <style>
+        /* CSS Existente (Mantenha o mesmo) */
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -116,7 +117,7 @@
         
         @keyframes slide-in {
             0% { opacity: 0; transform: translateX(-10px); }
-            100% { opacity: 1; transform: translateX(0); }
+            100% { transform: translateX(0); }
         }
 
         /* Fundo do Game Content agora é transparente */
@@ -289,7 +290,8 @@
             margin-top: 20px;
         }
         
-        /* --- TELAS DE RESULTADOS --- */
+        /* --- TELAS DE RESULTADOS E POPUPS --- (Mantenha o resto do CSS de Jogo/Resultados/Popups) */
+        
         #results-screen {
             display: none; 
             width: 100%;
@@ -424,6 +426,109 @@
         button:hover:enabled { background-color: #45a049; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
         #clear-pot-button { background-color: #f44336; }
+        
+        /* NOVO CSS: ADMIN PANEL */
+        .modal-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            color: black;
+            text-align: center;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+        
+        #admin-panel {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #333;
+            color: white;
+            z-index: 998;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        #admin-panel h1 {
+            color: #FFD700;
+            margin-bottom: 20px;
+            font-family: 'Press Start 2P', cursive, monospace;
+        }
+        
+        #admin-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        #score-list-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #444;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+        }
+        
+        .admin-score-item {
+            display: grid;
+            grid-template-columns: 150px 80px 100px 1fr 100px;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px dashed #666;
+            align-items: center;
+            font-size: 0.9em;
+        }
+        
+        .admin-score-header {
+            font-weight: bold;
+            color: #4CAF50;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        #trash-list-container .admin-score-item {
+            grid-template-columns: 150px 80px 100px 1fr 120px;
+        }
+        
+        .btn-delete { background-color: #f44336; padding: 5px 10px; }
+        .btn-restore { background-color: #4CAF50; padding: 5px 10px; }
+        .btn-admin { padding: 10px 15px; }
+
+        .admin-podium-view {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        
+        .admin-podium-section, .admin-all-times-section {
+            width: 45%;
+            padding: 15px;
+            background-color: #555;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -497,6 +602,87 @@
         <div id="error-popup" style="display:none;">
             <h2>RECEITA ERRADA!</h2>
         </div>
+
+        <div id="admin-login-popup" class="modal-popup">
+            <div class="modal-content">
+                <h2>Login de Administrador</h2>
+                <p>Digite a senha para acessar o painel de controle.</p>
+                <input type="password" id="admin-password-input" placeholder="Senha">
+                <button id="admin-login-button">Entrar</button>
+                <button onclick="closeAdminLogin()">Voltar</button>
+            </div>
+        </div>
+
+        <div id="admin-panel">
+            <h1>Painel de Administração de Scores</h1>
+            
+            <div id="admin-controls">
+                <button id="btn-show-lixeira" class="btn-admin">🗑️ Lixeira</button>
+                <button id="btn-add-user" class="btn-admin">➕ Adicionar Usuário</button>
+                <button id="btn-view-podium" class="btn-admin">🏆 Ver Pódio/Histórico</button>
+                <button id="btn-admin-logout" class="btn-delete">🚪 Voltar ao Menu</button>
+            </div>
+
+            <div id="score-list-container">
+                <h2>Histórico Completo de Scores</h2>
+                <div class="admin-score-item admin-score-header">
+                    <span>Nickname</span>
+                    <span>Tempo</span>
+                    <span>Receitas</span>
+                    <span>Data/Hora de Envio</span>
+                    <span>Ação</span>
+                </div>
+                <div id="admin-score-body">
+                    <p>Carregando scores...</p>
+                </div>
+            </div>
+            
+            <div id="admin-podium-view" style="display:none;">
+                <h2>Pódio e Histórico (Por Tempo)</h2>
+                <div class="admin-podium-view">
+                    <div id="admin-podium-section" class="admin-podium-section score-list">
+                        <h3>🏆 Pódio (Top 3) 🏆</h3>
+                    </div>
+                    <div id="admin-all-times-section" class="admin-all-times-section score-list">
+                        <h3>⏱️ Todos os Tempos (Ordem de Tempo) ⏱️</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="admin-trash-popup" class="modal-popup">
+            <div class="modal-content">
+                <h2>🗑️ Lixeira - Scores Excluídos</h2>
+                <div id="trash-list-container">
+                    <div class="admin-score-item admin-score-header">
+                        <span>Nickname</span>
+                        <span>Tempo</span>
+                        <span>Receitas</span>
+                        <span>Data/Hora Excluída</span>
+                        <span>Ação</span>
+                    </div>
+                    <div id="admin-trash-body">
+                        <p>Nenhum score na lixeira.</p>
+                    </div>
+                </div>
+                <button onclick="closeAdminTrash()">Voltar</button>
+            </div>
+        </div>
+
+        <div id="admin-add-score-popup" class="modal-popup">
+            <div class="modal-content">
+                <h2>➕ Adicionar Score Manualmente</h2>
+                <form id="add-score-form" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                    <input type="text" id="manual-nick" placeholder="Nickname" required>
+                    <input type="text" id="manual-time" placeholder="Tempo (Ex: 01:25)" required pattern="\d{2}:\d{2}">
+                    <input type="datetime-local" id="manual-datetime" required>
+                    <small>Formato de tempo: MM:SS (Minutos e Segundos)</small>
+                    <button type="submit" id="add-manual-button">Adicionar Score</button>
+                </form>
+                <button onclick="closeAddScorePopup()">Voltar</button>
+            </div>
+        </div>
+
     </div>
 
     <audio id="drop-sound" src="ding.mp3" preload="auto"></audio>
@@ -519,6 +705,10 @@
         const app = firebase.initializeApp(firebaseConfig);
         const db = app.firestore();
         
+        // --- ADMIN CONSTANTES ---
+        const ADMIN_NICK = "admin123";
+        const ADMIN_PASSWORD = "12345678";
+
         // --- DADOS DO JOGO (Regras) ---
         const ALL_RECIPES = {
             'bolo_chocolate': { name: 'Bolo de Chocolate', ingredients: ['Ovos', 'Leite', 'Trigo', 'Chocolate', 'Fermento', 'Açúcar'], image: 'https://i.imgur.com/4YaPJOb.png' },
@@ -592,6 +782,25 @@
         const saveResultsButton = document.getElementById('save-results-button');
         const podiumSection = document.getElementById('podium-section');
         const allTimesSection = document.getElementById('all-times-section');
+        
+        // Novos elementos Admin
+        const adminLoginPopup = document.getElementById('admin-login-popup');
+        const adminPasswordInput = document.getElementById('admin-password-input');
+        const adminLoginButton = document.getElementById('admin-login-button');
+        const adminPanel = document.getElementById('admin-panel');
+        const adminScoreBody = document.getElementById('admin-score-body');
+        const btnShowLixeira = document.getElementById('btn-show-lixeira');
+        const btnAddUser = document.getElementById('btn-add-user');
+        const btnViewPodium = document.getElementById('btn-view-podium');
+        const btnAdminLogout = document.getElementById('btn-admin-logout');
+        const adminTrashPopup = document.getElementById('admin-trash-popup');
+        const adminTrashBody = document.getElementById('admin-trash-body');
+        const adminAddScorePopup = document.getElementById('admin-add-score-popup');
+        const addScoreForm = document.getElementById('add-score-form');
+        const adminPodiumView = document.getElementById('admin-podium-view');
+        const adminPodiumSection = document.getElementById('admin-podium-section');
+        const adminAllTimesSection = document.getElementById('admin-all-times-section');
+        const scoreListContainer = document.getElementById('score-list-container');
 
 
         // --- FUNÇÕES DE CRONÔMETRO ---
@@ -599,6 +808,15 @@
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = totalSeconds % 60;
             return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        
+        // Novo: Converte MM:SS para segundos
+        function timeToSeconds(timeStr) {
+            const parts = timeStr.split(':');
+            if (parts.length === 2) {
+                return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+            }
+            return 0; 
         }
 
         function startTimer() {
@@ -614,7 +832,7 @@
         }
 
         // --- FUNÇÕES GERAIS ---
-
+        // ... (shuffleArray, areListsEqual, updatePotDisplay, updateGameDisplay - Mantidas) ...
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -658,8 +876,9 @@
             recipeCounter.textContent = `Receitas Completas: ${recipesCompleted.length}/${WIN_COUNT}`;
         }
 
-        // --- LÓGICA DE JOGO ---
-
+        // --- LÓGICA DE JOGO/ADMIN ---
+        
+        // ... (checkRecipe, addIngredientToPot, showRecipePopup, showErrorPopup, initializeAudio - Mantidas) ...
         async function checkRecipe() {
             if (gameWon) return;
 
@@ -720,7 +939,7 @@
 
             ingredientsInPot.push(ingredientName);
             
-            // CORREÇÃO DOS SONS: Reinicia e toca o som aqui
+            // Toca o som de drop (deve estar desbloqueado agora)
             dropSound.currentTime = 0;
             dropSound.play().catch(e => console.error("Erro ao tocar drop-sound:", e));
 
@@ -729,7 +948,7 @@
         }
         
         function showRecipePopup(name, imageUrl) {
-            // CORREÇÃO DOS SONS: Reinicia e toca o som aqui
+            // Toca o som de acerto
             plinSound.currentTime = 0;
             plinSound.play().catch(e => console.error("Erro ao tocar plin-sound:", e));
             
@@ -752,7 +971,7 @@
         }
 
         function showErrorPopup() {
-            // CORREÇÃO DOS SONS: Reinicia e toca o som aqui
+            // Toca o som de erro
             errorSound.currentTime = 0;
             errorSound.play().catch(e => console.error("Erro ao tocar error-sound:", e));
             
@@ -763,8 +982,301 @@
             }, 3000);
         }
 
-        // --- FUNÇÕES DE CONEXÃO COM FIREBASE ---
+        async function initializeAudio() {
+            try {
+                // Tenta carregar e tocar todos os sons (e pausa) para desbloqueá-los
+                await Promise.all([
+                    dropSound.play().then(() => dropSound.pause()),
+                    plinSound.play().then(() => plinSound.pause()),
+                    errorSound.play().then(() => errorSound.pause())
+                ]);
+                // Reinicia os currentTime para 0, para que eles estejam prontos para o início.
+                dropSound.currentTime = 0;
+                plinSound.currentTime = 0;
+                errorSound.currentTime = 0;
 
+                console.log("Áudio desbloqueado pelo clique do usuário.");
+
+            } catch (error) {
+                // O play inicial pode falhar, mas a interação desbloqueia para uso futuro.
+                console.warn("Falha no play inicial (mas interação de clique deve desbloquear).", error);
+            }
+        }
+
+        // --- ADMIN FUNÇÕES ---
+
+        function showAdminLogin() {
+            loginScreen.style.display = 'none';
+            adminLoginPopup.style.display = 'flex';
+            adminPasswordInput.value = '';
+            adminPasswordInput.focus();
+        }
+
+        function closeAdminLogin() {
+            adminLoginPopup.style.display = 'none';
+            loginScreen.style.display = 'block';
+        }
+
+        function loginAdmin() {
+            const enteredPassword = adminPasswordInput.value;
+            if (enteredPassword === ADMIN_PASSWORD) {
+                adminLoginPopup.style.display = 'none';
+                showAdminPanel();
+            } else {
+                alert("Senha incorreta!");
+                adminPasswordInput.value = '';
+                adminPasswordInput.focus();
+            }
+        }
+
+        function showAdminPanel() {
+            gameScreen.style.display = 'none';
+            resultsScreen.style.display = 'none';
+            loginScreen.style.display = 'none';
+            adminPanel.style.display = 'block';
+            
+            // Esconde os painéis secundários por padrão
+            adminPodiumView.style.display = 'none'; 
+            scoreListContainer.style.display = 'block';
+            
+            loadAdminScores();
+        }
+        
+        function adminLogout() {
+            adminPanel.style.display = 'none';
+            loginScreen.style.display = 'block';
+            nicknameInput.value = '';
+        }
+
+        // Função para formatar o timestamp do Firebase para Data/Hora (com segundos)
+        function formatTimestamp(timestamp) {
+            if (timestamp && timestamp.toDate) {
+                const date = timestamp.toDate();
+                const d = date.toLocaleDateString();
+                const t = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                return `${d} ${t}`;
+            }
+            return 'N/A';
+        }
+
+        async function loadAdminScores(collectionName = 'scores', targetElement = adminScoreBody) {
+            targetElement.innerHTML = '<p>Carregando scores...</p>';
+            
+            try {
+                const snapshot = await db.collection(collectionName)
+                                         .orderBy('submittedAt', 'desc') 
+                                         .get();
+                
+                let html = '';
+                if (snapshot.empty) {
+                    html = `<p>Nenhum score encontrado ${collectionName === 'trash' ? 'na lixeira' : ''}.</p>`;
+                } else {
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const docId = doc.id;
+                        const timeStr = data.timeFormatted || formatTime(data.timeInSeconds || 0);
+                        const recipes = data.recipesCompleted || 0;
+                        const submittedAt = formatTimestamp(data.submittedAt || data.deletedAt);
+                        
+                        // Determina o botão e a ação com base na coleção
+                        let actionButton;
+                        if (collectionName === 'trash') {
+                            actionButton = `<button class="btn-restore" onclick="restoreScore('${docId}')">Restaurar</button>`;
+                        } else {
+                            actionButton = `<button class="btn-delete" onclick="deleteScore('${docId}')">Excluir</button>`;
+                        }
+
+                        html += `
+                            <div class="admin-score-item">
+                                <span>${data.nick}</span>
+                                <span>${timeStr}</span>
+                                <span>${recipes}</span>
+                                <span>${submittedAt}</span>
+                                <span>${actionButton}</span>
+                            </div>
+                        `;
+                    });
+                }
+                targetElement.innerHTML = html;
+            } catch (error) {
+                console.error("Erro ao carregar scores do Admin:", error);
+                targetElement.innerHTML = '<p>Erro ao carregar dados do Firebase.</p>';
+            }
+        }
+        
+        // Novo: Excluir Score (move para a lixeira)
+        async function deleteScore(docId) {
+            if (!confirm("Tem certeza que deseja excluir este score? Ele será movido para a Lixeira.")) return;
+            
+            try {
+                const scoreRef = db.collection('scores').doc(docId);
+                const doc = await scoreRef.get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    // Adiciona à lixeira com a data de exclusão
+                    await db.collection('trash').add({
+                        ...data,
+                        deletedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    // Remove da lista principal
+                    await scoreRef.delete();
+                    alert("Score movido para a Lixeira com sucesso!");
+                    loadAdminScores();
+                }
+            } catch (error) {
+                console.error("Erro ao excluir score:", error);
+                alert("Erro ao excluir score.");
+            }
+        }
+
+        // Novo: Restaurar Score (move da lixeira de volta para scores)
+        async function restoreScore(docId) {
+            if (!confirm("Tem certeza que deseja restaurar este score? Ele voltará para o Histórico principal.")) return;
+            
+            try {
+                const trashRef = db.collection('trash').doc(docId);
+                const doc = await trashRef.get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    // Adiciona de volta ao scores
+                    await db.collection('scores').add({
+                        ...data,
+                        submittedAt: data.submittedAt || firebase.firestore.FieldValue.serverTimestamp() 
+                    });
+                    // Remove da lixeira
+                    await trashRef.delete();
+                    alert("Score restaurado com sucesso!");
+                    loadAdminScores('trash', adminTrashBody); // Recarrega a lixeira
+                    loadAdminScores(); // Recarrega o painel principal
+                }
+            } catch (error) {
+                console.error("Erro ao restaurar score:", error);
+                alert("Erro ao restaurar score.");
+            }
+        }
+        
+        function showAdminTrash() {
+            adminPanel.style.display = 'none';
+            adminTrashPopup.style.display = 'flex';
+            loadAdminScores('trash', adminTrashBody);
+        }
+        
+        function closeAdminTrash() {
+            adminTrashPopup.style.display = 'none';
+            adminPanel.style.display = 'block';
+            loadAdminScores(); // Recarrega o painel principal ao sair
+        }
+
+        function showAddScorePopup() {
+            adminPanel.style.display = 'none';
+            adminAddScorePopup.style.display = 'flex';
+            addScoreForm.reset();
+        }
+        
+        function closeAddScorePopup() {
+            adminAddScorePopup.style.display = 'none';
+            adminPanel.style.display = 'block';
+        }
+        
+        // Novo: Adicionar Score Manualmente
+        addScoreForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nick = document.getElementById('manual-nick').value.trim();
+            const timeStr = document.getElementById('manual-time').value.trim();
+            const dateTimeStr = document.getElementById('manual-datetime').value;
+
+            const timeInSeconds = timeToSeconds(timeStr);
+            const submissionDate = new Date(dateTimeStr);
+            
+            if (nick === '' || timeInSeconds === 0 || isNaN(submissionDate)) {
+                alert("Por favor, preencha todos os campos corretamente. Tempo deve ser MM:SS.");
+                return;
+            }
+
+            try {
+                await db.collection('scores').add({
+                    nick: nick,
+                    timeInSeconds: timeInSeconds,
+                    timeFormatted: timeStr,
+                    recipesCompleted: WIN_COUNT, // Assumimos que scores manuais são de jogos concluídos
+                    submittedAt: firebase.firestore.Timestamp.fromDate(submissionDate)
+                });
+                alert("Score manual adicionado com sucesso!");
+                closeAddScorePopup();
+                loadAdminScores();
+            } catch (error) {
+                console.error("Erro ao adicionar score manual:", error);
+                alert("Erro ao adicionar score manual.");
+            }
+        });
+        
+        // Novo: Visualização do Pódio no Admin
+        async function viewAdminPodium() {
+            scoreListContainer.style.display = 'none';
+            adminPodiumView.style.display = 'flex';
+            
+            adminPodiumSection.innerHTML = '<h3>🏆 Pódio (Top 3) 🏆</h3><p>Carregando...</p>';
+            adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos (Ordem de Tempo) ⏱️</h3><p>Carregando...</p>';
+            
+            try {
+                // Carrega todos os scores ordenados por tempo (para o pódio)
+                const podiumSnapshot = await db.collection('scores')
+                                         .orderBy('timeInSeconds', 'asc')
+                                         .get();
+                
+                let allScores = [];
+                podiumSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    allScores.push({
+                        nick: data.nick,
+                        timeFormatted: data.timeFormatted || formatTime(data.timeInSeconds || 0),
+                        timeInSeconds: data.timeInSeconds || 0,
+                        recipesCompleted: data.recipesCompleted || 0
+                    });
+                });
+
+                adminPodiumSection.innerHTML = '<h3>🏆 Pódio (Top 3) 🏆</h3>';
+                adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos (Ordem de Tempo) ⏱️</h3>';
+                
+                if (allScores.length === 0) {
+                    adminPodiumSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
+                    adminAllTimesSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
+                    return;
+                }
+
+                const podiumNames = ['🥇 1º Lugar (Ouro)', '🥈 2º Lugar (Prata)', '🥉 3º Lugar (Bronze)'];
+                const podiumClasses = ['gold', 'silver', 'bronze'];
+
+                // Exibe o Pódio
+                for (let i = 0; i < Math.min(3, allScores.length); i++) {
+                    const score = allScores[i];
+                    adminPodiumSection.innerHTML += `
+                        <div class="podium-item ${podiumClasses[i]}">
+                            <strong>${podiumNames[i]}</strong>: ${score.nick}<br>
+                            Tempo de Jogo: ${score.timeFormatted}
+                        </div>
+                    `;
+                }
+
+                // Exibe a lista de todos os tempos em ordem crescente
+                allScores.forEach(score => {
+                    adminAllTimesSection.innerHTML += `
+                        <div class="all-times-item">
+                            <div><strong>${score.nick}</strong></div>
+                            <div>${score.timeFormatted} (${score.recipesCompleted} Receitas)</div>
+                        </div>
+                    `;
+                });
+
+            } catch (error) {
+                console.error("Erro ao carregar pódio/histórico do Admin:", error);
+                adminPodiumSection.innerHTML = '<h3>🏆 Pódio</h3><p>Erro ao carregar placar.</p>';
+                adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos</h3><p>Erro ao carregar tempos.</p>';
+            }
+        }
+
+        // --- FUNÇÕES DE CONEXÃO COM FIREBASE (Mantidas) ---
+        // ... (loadPlayerProgress, savePlayerProgress, endGame, saveFinalScore, loadScoreboard) ...
         async function loadPlayerProgress(nick) {
             try {
                 const docRef = db.collection('jogadores').doc(nick);
@@ -801,11 +1313,10 @@
             }
         }
         
-        // --- FUNÇÕES DE RESULTADOS FINAIS E PÓDIO ---
-        
         function endGame() {
             loginScreen.style.display = 'none';
             gameScreen.style.display = 'none';
+            adminPanel.style.display = 'none';
             
             resultsScreen.style.display = 'flex'; 
             resultsScreen.style.flexDirection = 'column';
@@ -854,8 +1365,8 @@
             allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos ⏱️</h3><p>Carregando...</p>';
             
             try {
+                // Carrega scores ordenados pelo tempo do jogo (melhor tempo primeiro)
                 const snapshot = await db.collection('scores')
-                                         .orderBy('submittedAt', 'asc')
                                          .orderBy('timeInSeconds', 'asc')
                                          .get();
                 
@@ -865,31 +1376,28 @@
                     const date = data.submittedAt ? data.submittedAt.toDate() : new Date();
                     allScores.push({
                         nick: data.nick,
-                        timeFormatted: data.timeFormatted,
+                        timeFormatted: data.timeFormatted || formatTime(data.timeInSeconds || 0),
                         submittedAt: date.toLocaleString(),
                         timeInSeconds: data.timeInSeconds
                     });
                 });
 
                 podiumSection.innerHTML = '<h3>🏆 Pódio (Envios Mais Rápidos) 🏆</h3>';
-                const podiumNames = ['🥇 1º Lugar (Ouro)', '🥈 2º Lugar (Prata)', '🥉 3º Lugar (Bronze)'];
-                const podiumClasses = ['gold', 'silver', 'bronze'];
-
                 if (allScores.length === 0) {
                     podiumSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
                 } else {
                     for (let i = 0; i < Math.min(3, allScores.length); i++) {
                         const score = allScores[i];
                         podiumSection.innerHTML += `
-                            <div class="podium-item ${podiumClasses[i]}">
-                                <strong>${podiumNames[i]}</strong>: ${score.nick}<br>
+                            <div class="podium-item ${['gold', 'silver', 'bronze'][i]}">
+                                <strong>${['🥇 1º Lugar (Ouro)', '🥈 2º Lugar (Prata)', '🥉 3º Lugar (Bronze)'][i]}</strong>: ${score.nick}<br>
                                 Tempo de Jogo: ${score.timeFormatted}
                             </div>
                         `;
                     }
                 }
 
-                allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos ⏱️</h3>';
+                allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos (Melhores Tempos) ⏱️</h3>';
                 if (allScores.length === 0) {
                     allTimesSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
                 } else {
@@ -946,9 +1454,19 @@
             
             startGameButton.addEventListener('click', async () => {
                 playerName = nicknameInput.value.trim();
+
+                // Novo: Checa se é login de Admin
+                if (playerName === ADMIN_NICK) {
+                    showAdminLogin();
+                    return;
+                }
+
                 if (playerName) {
                     await loadPlayerProgress(playerName);
                     
+                    // CORREÇÃO: Inicializa o áudio aqui, aproveitando o clique do usuário
+                    await initializeAudio(); 
+
                     loginScreen.style.display = 'none';
                     gameScreen.style.display = 'flex';
                     resultsScreen.style.display = 'none';
@@ -957,7 +1475,29 @@
                     initializeGame();
                 }
             });
+            
+            // Novo: Listeners do Admin Login
+            adminLoginButton.addEventListener('click', loginAdmin);
+            adminPasswordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') loginAdmin();
+            });
 
+            // Novo: Listeners do Painel Admin
+            btnShowLixeira.addEventListener('click', showAdminTrash);
+            btnAddUser.addEventListener('click', showAddScorePopup);
+            btnViewPodium.addEventListener('click', viewAdminPodium);
+            btnAdminLogout.addEventListener('click', adminLogout);
+            
+            // Novo: Botão de Voltar do Pódio
+            adminPodiumView.addEventListener('click', (e) => {
+                if(e.target.tagName === 'BUTTON' && e.target.textContent.includes('Voltar')) {
+                    adminPodiumView.style.display = 'none';
+                    scoreListContainer.style.display = 'block';
+                    loadAdminScores();
+                }
+            });
+
+            // Listeners de Jogo (Mantidos)
             potDropzone.addEventListener('dragover', dragOver);
             potDropzone.addEventListener('dragenter', dragEnter);
             potDropzone.addEventListener('dragleave', dragLeave);
@@ -974,13 +1514,17 @@
         }
 
         function initializeGame() {
+            ingredientsInPot = []; // Garante que a panela comece vazia
+            recipesCompleted = []; // Garante que as receitas comecem zeradas
+            gameWon = false;
+            
             initializeIngredients();
             updateGameDisplay();
             updatePotDisplay();
             startTimer();
         }
         
-        // --- DRAG-AND-DROP HANDLERS ---
+        // --- DRAG-AND-DROP HANDLERS (Mantidos) ---
         function dragStart(e) {
             e.dataTransfer.setData('text/plain', e.target.closest('.ingredient').getAttribute('data-name'));
             e.target.closest('.ingredient').style.opacity = '0.5';
