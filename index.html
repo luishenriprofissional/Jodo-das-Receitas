@@ -537,11 +537,15 @@
             gap: 15px;
             margin-bottom: 30px;
         }
-        
-        #score-list-container {
+
+        /* --- ADMIN LISTA DE SCORES --- */
+        #score-list-container, #admin-podium-view {
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
+        }
+        
+        #score-list-container {
             background-color: #444;
             padding: 15px;
             border-radius: 8px;
@@ -826,9 +830,9 @@
         let finishDate = null;
 
         const loginScreen = document.getElementById('login-screen');
-        const memorizationScreen = document.getElementById('memorization-screen'); // NOVO
-        const countdownDisplay = document.getElementById('countdown-display'); // NOVO
-        const recipeListContainer = document.getElementById('recipe-list-container'); // NOVO
+        const memorizationScreen = document.getElementById('memorization-screen'); 
+        const countdownDisplay = document.getElementById('countdown-display'); 
+        const recipeListContainer = document.getElementById('recipe-list-container'); 
         const gameScreen = document.getElementById('game-screen');
         const resultsScreen = document.getElementById('results-screen');
         const nicknameInput = document.getElementById('nickname-input');
@@ -942,8 +946,61 @@
         function updateGameDisplay() {
             recipeCounter.textContent = `Receitas Completas: ${recipesCompleted.length}/${WIN_COUNT}`;
         }
+        
+        // --- MITIGAÇÃO DE CAPTURA DE TELA (NOVO) ---
 
-        // --- LÓGICA DE MEMORIZAÇÃO (NOVO) ---
+        function attemptScreenBlock(e) {
+            const memorizationScreen = document.getElementById('memorization-screen');
+            
+            // Só executa se estivermos na tela de memorização
+            if (memorizationScreen.style.display !== 'flex') {
+                return;
+            }
+
+            // 1. BLOQUEIO DE FERRAMENTAS DO DESENVOLVEDOR (F12) e IMPRESSÃO (Ctrl+P)
+            // Ctrl+Shift+I é o atalho comum para inspecionar no Chrome/Edge.
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
+                e.preventDefault();
+                console.warn("Ação bloqueada: DevTools ou Impressão.");
+                return;
+            }
+            
+            // 2. DETECÇÃO DA TECLA PRINT SCREEN (PrtSc)
+            // O nome da chave pode variar: 'PrintScreen', 'Snapshot', ou keyCode 44 (legado)
+            if (e.key === 'PrintScreen' || e.key === 'Snapshot' || e.keyCode === 44) {
+                
+                // Evita a ação padrão (baixa eficácia, mas vale a tentativa)
+                e.preventDefault(); 
+                
+                // Força a tela de memorização a desaparecer (dá a impressão de tela preta)
+                memorizationScreen.style.display = 'none';
+                
+                // Tenta restaurar a tela realocando o foco para "quebrar" o print
+                setTimeout(() => {
+                    // Verifica se o cronômetro não chegou a zero antes de reexibir
+                    if (memorizationScreen.style.display !== 'flex' && countdownDisplay.textContent > '0') {
+                        memorizationScreen.style.display = 'flex'; 
+                    }
+                }, 1); // Tempo de 1ms é o suficiente para "piscar" e frustrar o print
+                
+                console.warn("Tentativa de Print Screen detectada e tela oscilada.");
+                return;
+            }
+        }
+
+        // 3. BLOQUEIO DO MENU DE CONTEXTO (BOTÃO DIREITO)
+        document.addEventListener('contextmenu', function(e) {
+            const memorizationScreen = document.getElementById('memorization-screen');
+            if (memorizationScreen.style.display === 'flex') {
+                e.preventDefault();
+                console.warn("Menu de contexto bloqueado na tela de memorização.");
+            }
+        });
+
+        // --- FIM DA MITIGAÇÃO DE CAPTURA DE TELA ---
+
+
+        // --- LÓGICA DE MEMORIZAÇÃO ---
         
         function buildRecipeListForMemorization() {
             recipeListContainer.innerHTML = '';
@@ -1778,6 +1835,9 @@
             });
             
             saveResultsButton.addEventListener('click', saveFinalScore);
+
+            // NOVO: Adiciona o listener para bloqueio de tela (Mitigação de Print)
+            document.addEventListener('keydown', attemptScreenBlock);
         }
 
         function initializeGame() {
