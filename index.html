@@ -76,12 +76,6 @@
             min-height: 20px; /* Para evitar pulos de tela */
         }
 
-        #view-results-button {
-            display: none; /* Não é mais necessário, a checagem no input resolve */
-            background-color: #007bff;
-        }
-
-
         /* TELA DE JOGO */
         #game-screen {
             display: none; 
@@ -417,6 +411,31 @@
         }
         
         /* --- OUTROS ESTILOS DE POPUP E BOTÕES MANTIDOS --- */
+        .modal-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            color: black;
+            text-align: center;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+
         #recipe-popup {
             position: fixed;
             top: 0;
@@ -458,31 +477,6 @@
         #clear-pot-button { background-color: #f44336; }
         
         /* NOVO CSS: ADMIN PANEL */
-        .modal-popup {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-            color: black;
-            text-align: center;
-            max-width: 90%;
-            max-height: 90%;
-            overflow-y: auto;
-        }
-        
         #admin-panel {
             display: none;
             width: 100%;
@@ -574,7 +568,7 @@
                     <button id="start-game-button" disabled>Começar</button>
                 </div>
                 <p id="player-status-message"></p>
-                </div>
+            </div>
         </div>
 
         <div id="game-screen">
@@ -1295,7 +1289,7 @@
 
         // --- FUNÇÕES DE CONEXÃO COM FIREBASE ---
         
-        // NOVO: Verifica se o usuário já tem um score FINALIZADO na coleção 'scores'
+        // Verifica se o usuário já tem um score FINALIZADO na coleção 'scores'
         async function checkIfUserHasFinalScore(nick) {
             try {
                 // ESTA É A QUERY QUE EXIGE O ÍNDICE COMPOSTO NO FIREBASE
@@ -1494,12 +1488,12 @@
 
             } catch (error) {
                 console.error("Erro ao carregar o placar do Firebase:", error);
-                podiumSection.innerHTML = '<h3>🏆 Pódio</h3><p>Erro ao carregar o placar.</p>';
-                allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos</h3><p>Erro ao carregar os tempos.</p>';
+                podiumSection.innerHTML = '<h3>🏆 Pódio</h3><p>Erro ao carregar placar.</p>';
+                allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos</h3><p>Erro ao carregar tempos.</p>';
             }
         }
         
-        // FUNÇÃO DE RESULTADOS ANTERIORES (COM TRATAMENTO DE ERRO ROBUSTO)
+        // FUNÇÃO DE RESULTADOS ANTERIORES (EXIBE MELHOR SCORE E PLACAR)
         async function showPreviousResults(nick) {
             
             loginScreen.style.display = 'none';
@@ -1522,7 +1516,6 @@
 
             try {
                 // Busca o melhor tempo (asc) do jogador
-                // Requer o índice composto (nick, timeInSeconds asc)
                 const snapshot = await db.collection('scores')
                                          .where('nick', '==', nick)
                                          .orderBy('timeInSeconds', 'asc') 
@@ -1546,10 +1539,11 @@
                     });
 
                     document.getElementById('player-previous-result').innerHTML = `
-                        <p>Seu **melhor tempo de jogo** registrado:</p>
+                        <p>Você já finalizou o jogo. Este é seu **melhor tempo** registrado:</p>
                         <p><strong>Tempo:</strong> ${data.timeFormatted}</p>
                         <p><strong>Receitas:</strong> ${data.recipesCompleted}/${WIN_COUNT}</p>
                         <p><strong>Envio:</strong> ${formattedDateTime}</p>
+                        <p style="color: red; font-weight: bold; margin-top: 10px;">Você não pode jogar novamente.</p>
                     `;
                     
                 } else {
@@ -1613,8 +1607,9 @@
                     const hasFinalScore = await checkIfUserHasFinalScore(nick); 
 
                     if (hasFinalScore) {
-                        playerStatusMessage.textContent = `Score finalizado encontrado. Você será redirecionado para os resultados.`;
-                        startGameButton.textContent = 'Ver Resultado Salvo';
+                        // O botão Começar agora serve para iniciar o redirecionamento
+                        playerStatusMessage.textContent = `Usuário cadastrado com score finalizado! Clique abaixo.`;
+                        startGameButton.textContent = 'Ver Resultado';
                     } else {
                         // Não tem score finalizado (ou é novo, ou tem progresso incompleto)
                         playerStatusMessage.textContent = `Pronto para começar.`;
@@ -1629,7 +1624,7 @@
                 }
             });
             
-            // Lógica do Botão Começar (Atualizada com Bloqueio)
+            // Lógica do Botão Começar (Atualizada com Redirecionamento Automático)
             startGameButton.addEventListener('click', async () => {
                 playerName = nicknameInput.value.trim();
 
@@ -1644,7 +1639,7 @@
                 const hasFinalScore = await checkIfUserHasFinalScore(playerName);
 
                 if (hasFinalScore) {
-                    // **BLOQUEIO:** Usuário já finalizou. Vai direto para a tela de resultados.
+                    // **AÇÃO AUTOMÁTICA:** Usuário já finalizou. Redireciona imediatamente.
                     showPreviousResults(playerName); 
                     return; 
                 }
@@ -1659,7 +1654,7 @@
                 
                 statusText.textContent = `Olá, Chef ${playerName}! Faça ${WIN_COUNT} receitas!`;
                 
-                // Redefine o estado do jogo e inicia o timer a partir do tempo carregado
+                // Inicia o jogo ou continua o progresso
                 initializeGame();
             });
             
