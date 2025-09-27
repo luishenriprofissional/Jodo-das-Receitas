@@ -77,7 +77,7 @@
         }
 
         #view-results-button {
-            display: none; /* Começa escondido */
+            display: none; /* Não é mais necessário, a checagem no input resolve */
             background-color: #007bff;
         }
 
@@ -574,8 +574,7 @@
                     <button id="start-game-button" disabled>Começar</button>
                 </div>
                 <p id="player-status-message"></p>
-                <button id="view-results-button" style="display:none;">Ver Resultado</button>
-            </div>
+                </div>
         </div>
 
         <div id="game-screen">
@@ -615,12 +614,9 @@
             <div id="final-results">
                 <h2>Seu Resultado</h2>
                 <p id="player-previous-result"></p>
-                <p id="res-nick" style="display:none;"></p>
-                <p id="res-recipes" style="display:none;"></p>
-                <p id="res-time" style="display:none;"></p>
-                <p id="res-date" style="display:none;"></p>
-                <button id="start-new-game-button" style="display: block; width: 100%; margin-top: 10px;">Iniciar Novo Jogo</button>
+                
                 <button id="save-results-button" style="display: none; width: 100%;">Salvar Resultado e Ver Pódio</button>
+                <button id="back-to-login-button" style="display: block; width: 100%; margin-top: 10px;">Voltar à Tela Inicial</button>
             </div>
             
             <div id="scoreboard">
@@ -727,9 +723,7 @@
     <audio id="error-sound" src="error.mp3" preload="auto"></audio>
 
     <script>
-        // --- CONFIGURAÇÃO FIREBASE (CORRIGIDA) ---
-        // SDKs de Compatibilidade (v9-compat) carregados acima.
-        
+        // --- CONFIGURAÇÃO FIREBASE ---
         const firebaseConfig = {
             // USANDO A CONFIGURAÇÃO EXATA FORNECIDA EM SUAS IMAGENS
             apiKey: "AIzaSyD0f60PyH7r2b13Py4DbDixudkb1GJam5BA", 
@@ -786,7 +780,7 @@
         };
         const ALL_INGREDIENT_NAMES = Object.keys(ALL_INGREDIENTS_DATA);
 
-        // --- VARIÁVEIS DE ESTADO E DOM (Mantidas) ---
+        // --- VARIÁVEIS DE ESTADO E DOM ---
         let playerName = null;
         let ingredientsInPot = [];
         let recipesCompleted = [];
@@ -797,7 +791,6 @@
         let gameTimeInSeconds = 0;
         let timerInterval = null;
         let finishDate = null;
-        let playerPlayedBefore = false; // Novo flag
 
         const loginScreen = document.getElementById('login-screen');
         const gameScreen = document.getElementById('game-screen');
@@ -805,9 +798,6 @@
         const nicknameInput = document.getElementById('nickname-input');
         const startGameButton = document.getElementById('start-game-button');
         const playerStatusMessage = document.getElementById('player-status-message');
-        const viewResultsButton = document.getElementById('view-results-button'); 
-        const startNewGameButton = document.getElementById('start-new-game-button'); 
-        const playerPreviousResult = document.getElementById('player-previous-result'); 
         const timerDisplay = document.getElementById('timer');
         
         const potDropzone = document.getElementById('pot-dropzone');
@@ -826,8 +816,9 @@
         const saveResultsButton = document.getElementById('save-results-button');
         const podiumSection = document.getElementById('podium-section');
         const allTimesSection = document.getElementById('all-times-section');
-        
-        // Novos elementos Admin
+        const backToLoginButton = document.getElementById('back-to-login-button'); 
+
+        // Elementos Admin
         const adminLoginPopup = document.getElementById('admin-login-popup');
         const adminPasswordInput = document.getElementById('admin-password-input');
         const adminLoginButton = document.getElementById('admin-login-button');
@@ -863,7 +854,7 @@
         }
 
         function startTimer() {
-            startTime = Date.now();
+            startTime = Date.now() - (gameTimeInSeconds * 1000); // Continua do tempo salvo
             timerInterval = setInterval(() => {
                 gameTimeInSeconds = Math.floor((Date.now() - startTime) / 1000);
                 timerDisplay.textContent = formatTime(gameTimeInSeconds);
@@ -944,6 +935,8 @@
 
                 ingredientsInPot = [];
                 updatePotDisplay();
+                
+                // Salva progresso (receitas e tempo) APÓS CADA RECEITA
                 await savePlayerProgress(playerName);
                 
                 updateGameDisplay();
@@ -1302,20 +1295,21 @@
 
         // --- FUNÇÕES DE CONEXÃO COM FIREBASE ---
         
-        // NOVO: Verifica se o usuário já tem um score finalizado
-        async function checkIfUserHasPlayed(nick) {
+        // NOVO: Verifica se o usuário já tem um score FINALIZADO na coleção 'scores'
+        async function checkIfUserHasFinalScore(nick) {
             try {
-                // Esta é a query que está falhando se o índice não for criado!
+                // ESTA É A QUERY QUE EXIGE O ÍNDICE COMPOSTO NO FIREBASE
                 const snapshot = await db.collection('scores')
                                          .where('nick', '==', nick)
+                                         .limit(1)
                                          .get();
                 
                 return snapshot.size > 0;
 
             } catch (error) {
-                console.error("Erro ao verificar histórico de score:", error);
-                // Retorna false para permitir que o jogador continue mesmo com erro de busca
-                return false; 
+                console.error("Erro ao verificar score finalizado:", error);
+                // Retorna true em caso de erro para BLOQUEAR O REPLAY (mais seguro)
+                return true; 
             }
         }
         
@@ -1327,27 +1321,42 @@
                 if (doc.exists) {
                     const data = doc.data();
                     recipesCompleted = data.recipesCompleted || [];
-                    playerStatusMessage.textContent = `Progresso de ${nick} carregado. Receitas feitas: ${recipesCompleted.length}.`;
+                    gameTimeInSeconds = data.timeInSeconds || 0; // Carrega o tempo
+                    
+                    if (recipesCompleted.length > 0) {
+                        playerStatusMessage.textContent = `Progresso de ${nick} carregado. Continue o desafio!`;
+                    } else {
+                        playerStatusMessage.textContent = `Bem-vindo de volta, ${nick}!`;
+                    }
+                    
                 } else {
+                    // Novo jogador - cria o documento de progresso
                     await docRef.set({
                         nick: nick,
                         recipesCompleted: [],
+                        timeInSeconds: 0,
                         lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     recipesCompleted = [];
+                    gameTimeInSeconds = 0;
                     playerStatusMessage.textContent = `Novo jogador ${nick} registrado.`;
                 }
             } catch (error) {
                 console.error("Erro ao carregar/salvar progresso no Firebase:", error);
                 playerStatusMessage.textContent = "Erro de conexão com o Firebase. O progresso não será salvo.";
+                // Reseta localmente para garantir que o jogo comece
+                recipesCompleted = []; 
+                gameTimeInSeconds = 0;
             }
         }
 
         async function savePlayerProgress(nick) {
             if (!nick) return;
             try {
+                // Atualiza o progresso com o tempo atual e as receitas completas
                 await db.collection('jogadores').doc(nick).update({
                     recipesCompleted: recipesCompleted,
+                    timeInSeconds: gameTimeInSeconds, 
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 });
             } catch (error) {
@@ -1365,17 +1374,16 @@
             resultsScreen.style.alignItems = 'center';
             resultsScreen.style.justifyContent = 'center';
 
-            playerPreviousResult.innerHTML = '';
-            
             const finalResultsDiv = document.getElementById('final-results');
             finalResultsDiv.innerHTML = `
                 <h2>Parabéns, ${playerName}!</h2>
                 <p>Você completou todas as ${WIN_COUNT} receitas!</p>
                 <p>Seu tempo: <strong>${formatTime(gameTimeInSeconds)}</strong></p>
+                <p>⚠️ Seu score finalizado será salvo no placar principal.</p>
             `;
             
             saveResultsButton.style.display = 'block';
-            startNewGameButton.style.display = 'none';
+            backToLoginButton.style.display = 'none'; // Esconde enquanto salva
             saveResultsButton.disabled = false;
         }
 
@@ -1398,18 +1406,23 @@
 
             try {
                 await db.collection('scores').add(scoreData);
-                alert("Resultado salvo com sucesso! Carregando pódio...");
-                await loadScoreboard();
-                saveResultsButton.textContent = "Resultado Salvo!";
                 
-                playerPlayedBefore = true; 
-                startNewGameButton.style.display = 'block'; 
+                // OPCIONAL: Limpa o progresso salvo em 'jogadores' após o score finalizado
+                await db.collection('jogadores').doc(playerName).delete().catch(e => console.warn("Falha ao limpar progresso em 'jogadores'.", e));
+
+                alert("Resultado salvo com sucesso! Você não poderá jogar novamente.");
+                await loadScoreboard();
+                
+                saveResultsButton.style.display = 'none';
+                saveResultsButton.textContent = "Resultado Salvo!";
+                backToLoginButton.style.display = 'block'; // Mostra botão de voltar
                 
             } catch (error) {
                 console.error("Erro ao salvar o score final:", error);
                 alert("Erro ao salvar o resultado. Tente novamente.");
                 saveResultsButton.disabled = false;
                 saveResultsButton.textContent = "Salvar Resultado e Ver Pódio";
+                backToLoginButton.style.display = 'block';
             }
         }
         
@@ -1499,7 +1512,7 @@
             resultsScreen.style.justifyContent = 'center';
 
             saveResultsButton.style.display = 'none';
-            startNewGameButton.style.display = 'block';
+            backToLoginButton.style.display = 'block';
 
             const finalResultsDiv = document.getElementById('final-results');
             finalResultsDiv.innerHTML = `
@@ -1508,8 +1521,8 @@
             `;
 
             try {
-                // Tenta buscar o melhor tempo (asc) do jogador
-                // ESTA É A QUERY QUE EXIGE O ÍNDICE COMPOSTO
+                // Busca o melhor tempo (asc) do jogador
+                // Requer o índice composto (nick, timeInSeconds asc)
                 const snapshot = await db.collection('scores')
                                          .where('nick', '==', nick)
                                          .orderBy('timeInSeconds', 'asc') 
@@ -1519,14 +1532,12 @@
                 if (!snapshot.empty) {
                     const data = snapshot.docs[0].data();
                     
-                    // Tratamento robusto para a data de envio
                     let date;
                     if (data.submittedAt && typeof data.submittedAt.toDate === 'function') {
                         date = data.submittedAt.toDate();
                     } else if (data.submittedAt instanceof Date) {
                          date = data.submittedAt;
                     } else {
-                        // Fallback em caso de falha de leitura ou campo ausente
                         date = new Date(); 
                     }
                     
@@ -1535,7 +1546,7 @@
                     });
 
                     document.getElementById('player-previous-result').innerHTML = `
-                        <p>Seu <strong>melhor tempo de jogo</strong> registrado:</p>
+                        <p>Seu **melhor tempo de jogo** registrado:</p>
                         <p><strong>Tempo:</strong> ${data.timeFormatted}</p>
                         <p><strong>Receitas:</strong> ${data.recipesCompleted}/${WIN_COUNT}</p>
                         <p><strong>Envio:</strong> ${formattedDateTime}</p>
@@ -1581,42 +1592,44 @@
         }
 
         function attachListeners() {
+            
+            // Lógica de Checagem no Input (Atualizada)
             nicknameInput.addEventListener('input', async () => {
                 const nick = nicknameInput.value.trim();
                 startGameButton.disabled = nick.length === 0;
-                
+
                 if (nick.length > 0) {
-                    playerStatusMessage.textContent = ''; 
-                    viewResultsButton.style.display = 'none';
-                    
+                    playerStatusMessage.textContent = '';
+
                     if (nick === ADMIN_NICK) {
                         startGameButton.textContent = 'Acessar Admin';
                         startGameButton.disabled = false;
                         return;
                     }
                     
-                    // Esta função depende da query que pode falhar
-                    playerPlayedBefore = await checkIfUserHasPlayed(nick);
-                    
-                    if (playerPlayedBefore) {
-                        playerStatusMessage.textContent = `Usuário cadastrado e com score finalizado.`;
-                        viewResultsButton.style.display = 'block';
-                        startGameButton.textContent = 'Começar Novo Jogo';
-                        startGameButton.disabled = true; 
+                    startGameButton.textContent = 'Começar'; // Texto padrão
+
+                    // Verifica se o jogador já tem um score FINALIZADO
+                    const hasFinalScore = await checkIfUserHasFinalScore(nick); 
+
+                    if (hasFinalScore) {
+                        playerStatusMessage.textContent = `Score finalizado encontrado. Você será redirecionado para os resultados.`;
+                        startGameButton.textContent = 'Ver Resultado Salvo';
                     } else {
-                        playerStatusMessage.textContent = ``;
-                        viewResultsButton.style.display = 'none';
+                        // Não tem score finalizado (ou é novo, ou tem progresso incompleto)
+                        playerStatusMessage.textContent = `Pronto para começar.`;
                         startGameButton.textContent = 'Começar';
-                        startGameButton.disabled = false;
                     }
+                    startGameButton.disabled = false;
+                    
                 } else {
                     playerStatusMessage.textContent = '';
-                    viewResultsButton.style.display = 'none';
                     startGameButton.textContent = 'Começar';
                     startGameButton.disabled = true;
                 }
             });
             
+            // Lógica do Botão Começar (Atualizada com Bloqueio)
             startGameButton.addEventListener('click', async () => {
                 playerName = nicknameInput.value.trim();
 
@@ -1625,38 +1638,41 @@
                     return;
                 }
                 
-                if (playerName && !startGameButton.disabled) {
-                    await loadPlayerProgress(playerName);
-                    
-                    await initializeAudio(); 
+                if (!playerName) return;
 
-                    loginScreen.style.display = 'none';
-                    gameScreen.style.display = 'flex';
-                    resultsScreen.style.display = 'none';
-                    
-                    statusText.textContent = `Olá, Chef ${playerName}! Faça ${WIN_COUNT} receitas!`;
-                    initializeGame();
+                // 1. Verifica se o jogador já tem um score FINALIZADO
+                const hasFinalScore = await checkIfUserHasFinalScore(playerName);
+
+                if (hasFinalScore) {
+                    // **BLOQUEIO:** Usuário já finalizou. Vai direto para a tela de resultados.
+                    showPreviousResults(playerName); 
+                    return; 
                 }
+                
+                // 2. Se não tem score finalizado (é novo ou está em progresso)
+                await loadPlayerProgress(playerName);
+                await initializeAudio(); 
+
+                loginScreen.style.display = 'none';
+                gameScreen.style.display = 'flex';
+                resultsScreen.style.display = 'none';
+                
+                statusText.textContent = `Olá, Chef ${playerName}! Faça ${WIN_COUNT} receitas!`;
+                
+                // Redefine o estado do jogo e inicia o timer a partir do tempo carregado
+                initializeGame();
             });
             
-            viewResultsButton.addEventListener('click', () => {
-                const nick = nicknameInput.value.trim();
-                if (nick) {
-                    playerName = nick; 
-                    showPreviousResults(playerName);
-                }
-            });
-
-            startNewGameButton.addEventListener('click', () => {
+            // Listener para voltar para a tela inicial a partir dos resultados
+            backToLoginButton.addEventListener('click', () => {
                 resultsScreen.style.display = 'none';
                 loginScreen.style.display = 'block';
-                
-                playerStatusMessage.textContent = 'Pronto para um novo desafio!';
-                startGameButton.disabled = false;
+                nicknameInput.value = ''; // Limpa o nick para forçar nova checagem
+                playerStatusMessage.textContent = '';
                 startGameButton.textContent = 'Começar';
-                viewResultsButton.style.display = 'none';
+                startGameButton.disabled = true;
             });
-            
+
             adminLoginButton.addEventListener('click', loginAdmin);
             adminPasswordInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') loginAdmin();
@@ -1683,14 +1699,15 @@
         }
 
         function initializeGame() {
-            ingredientsInPot = [];
-            recipesCompleted = [];
+            // Se carregado o progresso, recipesCompleted e gameTimeInSeconds já estão definidos
             gameWon = false;
             
             initializeIngredients();
             updateGameDisplay();
             updatePotDisplay();
-            startTimer();
+            
+            // Inicia o timer com o tempo carregado (gameTimeInSeconds)
+            startTimer(); 
         }
         
         // --- DRAG-AND-DROP HANDLERS ---
