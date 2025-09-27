@@ -1,327 +1,503 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo da Memória</title>
+    <title>Atividade do Restaurante: Jogo das Receitas</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            background-color: #f0f0f0;
+            min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            background-color: #f4f4f9;
         }
 
-        h1 {
-            color: #333;
-        }
-
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 600px;
-            margin-bottom: 20px;
-        }
-
-        .board {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            width: 100%;
-            max-width: 600px;
-            padding: 10px;
+        #app-container {
             background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .card {
-            width: 100%;
-            height: 100px;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.6s;
-            cursor: pointer;
-        }
-
-        .card.is-flipped {
-            transform: rotateY(180deg);
-        }
-
-        .card .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 6px;
             border: 2px solid #333;
-        }
-
-        .card .card-back {
-            background-color: #6a0dad;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 2em;
-        }
-
-        .card .card-front {
-            background-color: #e6e6fa;
-            transform: rotateY(180deg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-        }
-
-        #scoreboard {
-            margin-top: 20px;
-            width: 100%;
-            max-width: 600px;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        #scoreboard h2 {
-            margin-top: 0;
-        }
-
-        #scoreboard ol {
-            padding-left: 20px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #fff;
             padding: 30px;
             border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 800px;
         }
 
-        .modal-content input {
-            padding: 8px;
-            margin: 10px 0;
-            width: 80%;
+        /* --- Estilo da Tela de Login --- */
+        #login-screen {
+            padding: 40px 20px;
         }
 
-        .modal-content button {
-            padding: 10px 20px;
-            border: none;
-            background-color: #6a0dad;
-            color: #fff;
-            cursor: pointer;
+        #login-screen h1 {
+            color: #4CAF50;
+            margin-bottom: 30px;
+        }
+
+        #login-form input {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
             border-radius: 5px;
+            font-size: 16px;
+            width: 250px;
+        }
+
+        #login-form button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        #login-form button:hover:enabled {
+            background-color: #45a049;
+        }
+
+        #login-form button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* --- Estilos do Jogo --- */
+        #game-screen {
+            display: none; /* Esconde a tela do jogo inicialmente */
+        }
+
+        #stove-area {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        #pot-dropzone {
+            width: 250px;
+            height: 180px;
+            background-color: #a0522d;
+            border: 5px solid #222;
+            border-radius: 15px;
+            position: relative;
+            padding: 10px;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(255, 69, 0, 0.7); /* Efeito de fogo */
+        }
+
+        #current-ingredients {
+            min-height: 50px;
+            width: 100%;
+            margin-top: 10px;
+            border: 1px dashed rgba(255, 255, 255, 0.5);
+            padding: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        #ingredients-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .ingredient {
+            cursor: grab;
+            padding: 8px 12px;
+            background-color: #7fffd4;
+            border: 1px solid #3cb371;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: transform 0.1s ease-in-out;
+        }
+
+        .ingredient:active {
+            cursor: grabbing;
+        }
+
+        .highlight {
+            background-color: #f0e68c;
+        }
+
+        .ingredient-in-pot {
+            background-color: #ff9800;
+            color: white;
+            padding: 4px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        button:hover:enabled {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #clear-pot-button {
+            background-color: #f44336;
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>Jogo da Memória</h1>
-    <div class="game-info">
-        <div>Movimentos: <span id="moves">0</span></div>
-        <div>Pares Encontrados: <span id="matched-pairs">0</span>/8</div>
-    </div>
-    <div class="board"></div>
+    <div id="app-container">
+        <div id="login-screen">
+            <h1>Atividade do Restaurante: Jogo das Receitas</h1>
+            <p>Insira seu Nickname para começar o desafio!</p>
+            <div id="login-form">
+                <input type="text" id="nickname-input" placeholder="Seu Nickname" maxlength="15">
+                <button id="start-game-button" disabled>Começar</button>
+            </div>
+            <p id="player-status-message" style="color: blue; margin-top: 15px;"></p>
+        </div>
 
-    <div id="scoreboard">
-        <h2>Ranking de Pontuações</h2>
-        <ol id="rank-list"></ol>
-    </div>
+        <div id="game-screen">
+            <h1>Mini-Jogo: Chef em Ação</h1>
+            <p id="status-text">Arraste os ingredientes para a panela e complete 3 receitas!</p>
+            <p id="recipe-counter">Receitas Completas: 0/3</p>
 
-    <div id="winnerModal" class="modal">
-        <div class="modal-content">
-            <h2>Parabéns! Você venceu!</h2>
-            <p>Seu número de movimentos: <span id="finalMoves">0</span></p>
-            <p>Digite seu nome para salvar sua pontuação:</p>
-            <input type="text" id="playerName" placeholder="Seu nome">
-            <button id="saveScoreButton">Salvar Pontuação</button>
+            <div id="stove-area">
+                <div id="pot-dropzone">
+                    <p>PANELA: Solte Ingredientes Aqui</p>
+                    <div id="current-ingredients"></div>
+                </div>
+            </div>
+
+            <div id="ingredients-area">
+                </div>
+
+            <button id="check-recipe-button" disabled>Verificar Receita</button>
+            <button id="clear-pot-button">Limpar Panela</button>
+
+            <audio id="drop-sound" src="ding.mp3" preload="auto"></audio>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-        // Cole a configuração do seu Firebase AQUI, conforme a imagem fornecida
+    <script>
+        // Substitua APENAS estes dados pela sua configuração do Firebase da imagem
         const firebaseConfig = {
-            apiKey: "AIzaSyCR9mVu8ifdJdSV5psQxgKv-tjERM7WJ2A",
-            authDomain: "jododamemoria.firebaseapp.com",
-            projectId: "jododamemoria",
-            storageBucket: "jododamemoria.firebasestorage.app",
-            messagingSenderId: "628882650020",
-            appId: "1:628882650020:web:d38af5fcf33a8894974731",
-            measurementId: "G-0M0351L542"
+            apiKey: "AIzaSyD0f60PyH7r2b13Py4DbDixudkb1GJam5BA",
+            authDomain: "jogoreceitas-3a179.firebaseapp.com",
+            projectId: "jogoreceitas-3a179",
+            storageBucket: "jogoreceitas-3a179.firebaseapp.com",
+            messagingSenderId: "806274352483",
+            appId: "1:806274352483:web:b930a2822d70c55c83f56",
+            measurementId: "G-E7QFS3E77C"
         };
+
+        // Inicializa o Firebase e o Firestore
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = app.firestore();
         
-        // Inicializa o Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // --- DADOS DO JOGO (Regras) ---
+        // As chaves são os IDs de receita que serão salvos no Firebase
+        const ALL_RECIPES = {
+            'bolo_chocolate': { name: 'Bolo de Chocolate', ingredients: ['Ovos', 'Leite', 'Trigo', 'Chocolate', 'Fermento', 'Açúcar'] },
+            'bife_pure': { name: 'Bife com Purê', ingredients: ['Bife', 'Purê de batata'] },
+            'sanduiche': { name: 'Sanduíche Natural', ingredients: ['Pão', 'Queijo', 'Presunto'] },
+            'macarrao_almondegas': { name: 'Macarrão c/ Almôndegas', ingredients: ['Macarrão', 'Molho de tomate', 'Almôndegas'] },
+            'prato_feito': { name: 'Prato Feito (PF)', ingredients: ['Arroz', 'Feijão', 'Bife'] }
+        };
 
-        // --- Lógica do Jogo ---
-        const board = document.querySelector('.board');
-        const movesSpan = document.getElementById('moves');
-        const matchedPairsSpan = document.getElementById('matched-pairs');
-        const rankList = document.getElementById('rank-list');
-        const winnerModal = document.getElementById('winnerModal');
-        const finalMovesSpan = document.getElementById('finalMoves');
-        const playerNameInput = document.getElementById('playerName');
-        const saveScoreButton = document.getElementById('saveScoreButton');
+        const ALL_INGREDIENTS = [
+            'Macarrão', 'Molho de tomate', 'Alface', 'Cebola', 'Maçã', 'Ovos', 'Leite',
+            'Chocolate', 'Trigo', 'Fermento', 'Açúcar', 'Pão', 'Queijo', 'Presunto',
+            'Bacon', 'Bife', 'Purê de batata', 'Batata fritas', 'Arroz', 'Feijão', 'Almôndegas'
+        ];
 
-        let cards = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E', 'F', 'F', 'G', 'G', 'H', 'H'];
-        let hasFlippedCard = false;
-        let lockBoard = false;
-        let firstCard, secondCard;
-        let moves = 0;
-        let matchedPairs = 0;
+        // --- VARIÁVEIS DE ESTADO ---
+        let playerName = null;
+        let ingredientsInPot = [];
+        let recipesCompleted = [];
+        let gameWon = false;
+        const WIN_COUNT = 3;
 
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+        // --- ELEMENTOS DO DOM ---
+        const loginScreen = document.getElementById('login-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const nicknameInput = document.getElementById('nickname-input');
+        const startGameButton = document.getElementById('start-game-button');
+        const playerStatusMessage = document.getElementById('player-status-message');
+        
+        const potDropzone = document.getElementById('pot-dropzone');
+        const ingredientsArea = document.getElementById('ingredients-area');
+        const currentIngredientsDiv = document.getElementById('current-ingredients');
+        const statusText = document.getElementById('status-text');
+        const recipeCounter = document.getElementById('recipe-counter');
+        const checkRecipeButton = document.getElementById('check-recipe-button');
+        const clearPotButton = document.getElementById('clear-pot-button');
+        const dropSound = document.getElementById('drop-sound');
+
+        // --- LÓGICA DE LOGIN/INICIALIZAÇÃO ---
+
+        nicknameInput.addEventListener('input', () => {
+            startGameButton.disabled = nicknameInput.value.trim().length === 0;
+        });
+
+        startGameButton.addEventListener('click', async () => {
+            playerName = nicknameInput.value.trim();
+            if (playerName) {
+                // Tenta carregar o progresso existente ou cria um novo
+                await loadPlayerProgress(playerName);
+                loginScreen.style.display = 'none';
+                gameScreen.style.display = 'block';
+                statusText.textContent = `Olá, Chef ${playerName}! Faça ${WIN_COUNT} receitas!`;
+                initializeGame();
             }
-        }
+        });
 
-        function createBoard() {
-            shuffle(cards);
-            board.innerHTML = '';
-            cards.forEach(cardValue => {
-                const card = document.createElement('div');
-                card.classList.add('card');
-                card.dataset.value = cardValue;
-                card.innerHTML = `
-                    <div class="card-face card-back">?</div>
-                    <div class="card-face card-front">${cardValue}</div>
-                `;
-                card.addEventListener('click', flipCard);
-                board.appendChild(card);
-            });
-        }
-
-        function flipCard() {
-            if (lockBoard) return;
-            if (this === firstCard) return;
-
-            this.classList.add('is-flipped');
-
-            if (!hasFlippedCard) {
-                hasFlippedCard = true;
-                firstCard = this;
-                return;
-            }
-
-            secondCard = this;
-            moves++;
-            movesSpan.textContent = moves;
-
-            checkForMatch();
-        }
-
-        function checkForMatch() {
-            let isMatch = firstCard.dataset.value === secondCard.dataset.value;
-            isMatch ? disableCards() : unflipCards();
-        }
-
-        function disableCards() {
-            firstCard.removeEventListener('click', flipCard);
-            secondCard.removeEventListener('click', flipCard);
-            
-            matchedPairs++;
-            matchedPairsSpan.textContent = matchedPairs;
-
-            resetBoard();
-
-            if (matchedPairs === cards.length / 2) {
-                showWinnerModal();
-            }
-        }
-
-        function unflipCards() {
-            lockBoard = true;
-            setTimeout(() => {
-                firstCard.classList.remove('is-flipped');
-                secondCard.classList.remove('is-flipped');
-                resetBoard();
-            }, 1000);
-        }
-
-        function resetBoard() {
-            [hasFlippedCard, lockBoard] = [false, false];
-            [firstCard, secondCard] = [null, null];
-        }
-
-        function showWinnerModal() {
-            finalMovesSpan.textContent = moves;
-            winnerModal.style.display = 'flex';
-        }
-
-        // --- Interação com o Banco de Dados (Firebase) ---
-        async function saveScore() {
-            const playerName = playerNameInput.value.trim();
-            if (playerName === "") {
-                alert("Por favor, digite seu nome.");
-                return;
-            }
+        /**
+         * Carrega o progresso do jogador do Firebase ou inicializa.
+         * @param {string} nick - O nome do jogador (usado como ID do documento).
+         */
+        async function loadPlayerProgress(nick) {
             try {
-                await addDoc(collection(db, "pontuacoes"), {
-                    nome: playerName,
-                    pontuacao: moves,
-                    data: new Date()
-                });
-                alert("Pontuação salva com sucesso!");
-                winnerModal.style.display = 'none';
-                loadScores();
-                resetGame();
-            } catch (e) {
-                console.error("Erro ao salvar a pontuação: ", e);
-                alert("Erro ao salvar a pontuação.");
+                const docRef = db.collection('jogadores').doc(nick);
+                const doc = await docRef.get();
+
+                if (doc.exists) {
+                    const data = doc.data();
+                    recipesCompleted = data.recipesCompleted || [];
+                    playerStatusMessage.textContent = `Progresso de ${nick} carregado. Receitas feitas: ${recipesCompleted.length}.`;
+                } else {
+                    // Novo jogador, cria o documento
+                    await docRef.set({
+                        nick: nick,
+                        recipesCompleted: [],
+                        lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    recipesCompleted = [];
+                    playerStatusMessage.textContent = `Novo jogador ${nick} registrado.`;
+                }
+            } catch (error) {
+                console.error("Erro ao carregar/salvar progresso no Firebase:", error);
+                playerStatusMessage.textContent = "Erro de conexão com o Firebase. O progresso não será salvo.";
             }
         }
 
-        async function loadScores() {
-            const pontuacoesRef = collection(db, "pontuacoes");
-            const q = query(pontuacoesRef, orderBy("pontuacao")); // Ordena por pontuação (menor é melhor)
-            const querySnapshot = await getDocs(q);
+        // --- LÓGICA DE JOGO ---
+
+        /**
+         * Normaliza e compara duas listas de ingredientes.
+         */
+        function areListsEqual(list1, list2) {
+            if (list1.length !== list2.length) return false;
+            const sorted1 = [...list1].sort();
+            const sorted2 = [...list2].sort();
+            return sorted1.every((value, index) => value === sorted2[index]);
+        }
+
+        /**
+         * Verifica se os ingredientes na panela formam uma receita.
+         */
+        async function checkRecipe() {
+            if (gameWon) return;
+
+            const currentCombo = [...ingredientsInPot];
+            let foundRecipeId = null;
+            let foundRecipeName = null;
+
+            for (const [id, recipe] of Object.entries(ALL_RECIPES)) {
+                if (recipesCompleted.includes(id)) {
+                    continue; // Pula receitas já feitas
+                }
+
+                if (areListsEqual(currentCombo, recipe.ingredients)) {
+                    foundRecipeId = id;
+                    foundRecipeName = recipe.name;
+                    break;
+                }
+            }
+
+            if (foundRecipeId) {
+                // Receita encontrada!
+                recipesCompleted.push(foundRecipeId);
+                statusText.textContent = `PARABÉNS! Você fez um(a) ${foundRecipeName}!`;
+                
+                // Limpa a panela e reseta o estado local
+                ingredientsInPot = [];
+                updatePotDisplay();
+
+                // Lógica de Persistência no Firebase
+                await saveProgressToFirebase();
+                
+                // Lógica de Vitória
+                updateGameDisplay();
+                if (recipesCompleted.length >= WIN_COUNT) {
+                    gameWon = true;
+                    statusText.textContent = `VITÓRIA! Você completou ${recipesCompleted.length} receitas e venceu o jogo! Parabéns, Chef ${playerName}!`;
+                    checkRecipeButton.disabled = true;
+                    ingredientsArea.innerHTML = '<h2>🎉 JOGO COMPLETO! 🎉</h2>';
+                }
+
+            } else {
+                statusText.textContent = `Essa combinação (${currentCombo.join(', ')}) não resulta em uma receita nova. Tente limpar e começar de novo.`;
+            }
+        }
+
+        /**
+         * Salva o progresso do jogador no Firebase.
+         */
+        async function saveProgressToFirebase() {
+            if (!playerName) return; // Não salva se não houver Nick
+            try {
+                await db.collection('jogadores').doc(playerName).update({
+                    recipesCompleted: recipesCompleted,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                console.error("Erro ao salvar progresso no Firebase:", error);
+                // O jogo continua, mas o progresso pode não estar salvo.
+            }
+        }
+
+        /**
+         * Adiciona um ingrediente à panela.
+         */
+        function addIngredientToPot(ingredientName) {
+            if (gameWon) return;
             
-            rankList.innerHTML = '';
-            querySnapshot.forEach((doc) => {
-                const li = document.createElement('li');
-                const data = doc.data();
-                li.textContent = `${data.nome} - ${data.pontuacao} movimentos`;
-                rankList.appendChild(li);
+            if (ingredientsInPot.includes(ingredientName)) {
+                statusText.textContent = `${ingredientName} já está na panela!`;
+                return;
+            }
+
+            ingredientsInPot.push(ingredientName);
+            dropSound.currentTime = 0;
+            dropSound.play();
+            updatePotDisplay();
+            statusText.textContent = `${ingredientName} adicionado. Faltam ${ALL_RECIPES[Object.keys(ALL_RECIPES).find(id => !recipesCompleted.includes(id))]?.ingredients.length - ingredientsInPot.length || '?'} itens para a próxima receita...`;
+        }
+
+        /**
+         * Atualiza o display dos ingredientes na panela.
+         */
+        function updatePotDisplay() {
+            currentIngredientsDiv.innerHTML = '';
+            ingredientsInPot.forEach(ing => {
+                const span = document.createElement('span');
+                span.textContent = ing;
+                span.className = 'ingredient-in-pot';
+                currentIngredientsDiv.appendChild(span);
+            });
+            checkRecipeButton.disabled = ingredientsInPot.length === 0;
+        }
+
+        /**
+         * Atualiza o contador de receitas e o status geral.
+         */
+        function updateGameDisplay() {
+            recipeCounter.textContent = `Receitas Completas: ${recipesCompleted.length}/${WIN_COUNT}`;
+        }
+
+        /**
+         * Limpa todos os ingredientes da panela.
+         */
+        function clearPot() {
+            ingredientsInPot = [];
+            updatePotDisplay();
+            statusText.textContent = 'Panela limpa. Comece uma nova receita!';
+        }
+
+        // --- LÓGICA DO DRAG-AND-DROP ---
+
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.textContent);
+            e.target.style.opacity = '0.5';
+        }
+
+        function dragEnd(e) {
+            e.target.style.opacity = '1';
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function dragEnter(e) {
+            if (e.target.closest('#pot-dropzone')) {
+                potDropzone.classList.add('highlight');
+            }
+        }
+
+        function dragLeave(e) {
+            if (e.target.closest('#pot-dropzone')) {
+                potDropzone.classList.remove('highlight');
+            }
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            potDropzone.classList.remove('highlight');
+            
+            const ingredientName = e.dataTransfer.getData('text/plain');
+            
+            addIngredientToPot(ingredientName);
+        }
+
+        // --- INICIALIZAÇÃO DO JOGO ---
+
+        function initializeIngredients() {
+            ingredientsArea.innerHTML = '';
+            ALL_INGREDIENTS.forEach(ing => {
+                const div = document.createElement('div');
+                div.textContent = ing;
+                div.className = 'ingredient';
+                div.setAttribute('draggable', true);
+                div.addEventListener('dragstart', dragStart);
+                div.addEventListener('dragend', dragEnd);
+                ingredientsArea.appendChild(div);
             });
         }
 
-        function resetGame() {
-            moves = 0;
-            matchedPairs = 0;
-            movesSpan.textContent = 0;
-            matchedPairsSpan.textContent = 0;
-            createBoard();
+        function attachListeners() {
+            potDropzone.addEventListener('dragover', dragOver);
+            potDropzone.addEventListener('dragenter', dragEnter);
+            potDropzone.addEventListener('dragleave', dragLeave);
+            potDropzone.addEventListener('drop', drop);
+
+            checkRecipeButton.addEventListener('click', checkRecipe);
+            clearPotButton.addEventListener('click', clearPot);
         }
 
-        saveScoreButton.addEventListener('click', saveScore);
-        
-        // Inicializa o jogo e carrega as pontuações ao carregar a página
-        createBoard();
-        loadScores();
+        function initializeGame() {
+            initializeIngredients();
+            attachListeners();
+            updateGameDisplay();
+            updatePotDisplay();
+        }
 
     </script>
 </body>
