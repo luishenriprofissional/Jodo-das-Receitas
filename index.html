@@ -1235,7 +1235,7 @@
             
             try {
                 const podiumSnapshot = await db.collection('scores')
-                                         .orderBy('submittedAt', 'asc') 
+                                         .orderBy('submittedAt', 'asc') // Ordem cronológica crescente
                                          .get();
                 
                 let allScores = [];
@@ -1587,44 +1587,18 @@
 
         function attachListeners() {
             
-            // Lógica de Checagem no Input (Atualizada)
-            nicknameInput.addEventListener('input', async () => {
+            // Lógica de Checagem no Input (SIMPLIFICADA)
+            nicknameInput.addEventListener('input', () => {
                 const nick = nicknameInput.value.trim();
                 startGameButton.disabled = nick.length === 0;
-
-                if (nick.length > 0) {
-                    playerStatusMessage.textContent = '';
-
-                    if (nick === ADMIN_NICK) {
-                        startGameButton.textContent = 'Acessar Admin';
-                        startGameButton.disabled = false;
-                        return;
-                    }
-                    
-                    startGameButton.textContent = 'Começar'; // Texto padrão
-
-                    // Verifica se o jogador já tem um score FINALIZADO
-                    const hasFinalScore = await checkIfUserHasFinalScore(nick); 
-
-                    if (hasFinalScore) {
-                        // O botão Começar agora serve para iniciar o redirecionamento
-                        playerStatusMessage.textContent = `Usuário cadastrado com score finalizado! Clique abaixo.`;
-                        startGameButton.textContent = 'Ver Resultado';
-                    } else {
-                        // Não tem score finalizado (ou é novo, ou tem progresso incompleto)
-                        playerStatusMessage.textContent = `Pronto para começar.`;
-                        startGameButton.textContent = 'Começar';
-                    }
-                    startGameButton.disabled = false;
-                    
-                } else {
-                    playerStatusMessage.textContent = '';
-                    startGameButton.textContent = 'Começar';
-                    startGameButton.disabled = true;
-                }
+                
+                // MANTÉM O BOTÃO SEMPRE COMO 'COMEÇAR' E LIMPA A MENSAGEM
+                startGameButton.textContent = (nick === ADMIN_NICK) ? 'Acessar Admin' : 'Começar';
+                playerStatusMessage.textContent = '';
+                
             });
             
-            // Lógica do Botão Começar (Atualizada com Redirecionamento Automático)
+            // Lógica do Botão Começar (Com Carregamento e Redirecionamento Automático)
             startGameButton.addEventListener('click', async () => {
                 playerName = nicknameInput.value.trim();
 
@@ -1635,16 +1609,31 @@
                 
                 if (!playerName) return;
 
-                // 1. Verifica se o jogador já tem um score FINALIZADO
+                // 1. Feedback de Carregamento
+                const originalButtonText = startGameButton.textContent;
+                startGameButton.textContent = 'Carregando...';
+                startGameButton.disabled = true;
+                playerStatusMessage.textContent = 'Verificando seu cadastro...';
+                
+                // 2. Verifica se o jogador já tem um score FINALIZADO
                 const hasFinalScore = await checkIfUserHasFinalScore(playerName);
 
+                // 3. Ação baseada na checagem
                 if (hasFinalScore) {
                     // **AÇÃO AUTOMÁTICA:** Usuário já finalizou. Redireciona imediatamente.
+                    playerStatusMessage.textContent = 'Score finalizado encontrado. Redirecionando...';
                     showPreviousResults(playerName); 
+                    // Reset do botão é desnecessário pois a tela de resultados será carregada.
                     return; 
                 }
                 
-                // 2. Se não tem score finalizado (é novo ou está em progresso)
+                // 4. Se não tem score finalizado (é novo ou está em progresso), INICIA O JOGO.
+                
+                // Restaura o botão e a mensagem
+                startGameButton.textContent = originalButtonText;
+                startGameButton.disabled = false;
+                playerStatusMessage.textContent = 'Iniciando novo jogo...';
+                
                 await loadPlayerProgress(playerName);
                 await initializeAudio(); 
 
