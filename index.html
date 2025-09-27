@@ -36,9 +36,8 @@
             position: relative;
         }
 
-        /* 1. CORREÇÃO: TELA DE LOGIN DEVE SER O ÚNICO CONTEÚDO VISÍVEL NO CENTRO */
         #login-screen {
-            display: block; /* MANTÉM VISÍVEL */
+            display: block; 
             text-align: center;
             padding: 40px;
             background-color: white; 
@@ -46,19 +45,17 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
             position: relative; 
             z-index: 10; 
-            /* Para centralizar perfeitamente no #app-container */
             margin: auto; 
         }
 
         #login-screen img.logo {
-            width: 80px; /* Ajuste o tamanho conforme desejar */
+            width: 80px; 
             height: auto;
             margin-bottom: 20px;
         }
 
-        /* 2. CORREÇÃO: TELA DE JOGO DEVE ESTAR TOTALMENTE ESCONDIDA */
         #game-screen {
-            display: none; /* CRÍTICO: ESCONDE TOTALMENTE */
+            display: none; 
             width: 100%;
             height: 100%;
             position: absolute;
@@ -79,14 +76,15 @@
             z-index: 5;
         }
         
+        /* CORREÇÃO 1.1: Remove o fundo transparente preto do game-content */
         #game-content {
             position: relative;
             width: auto;
             max-width: 900px;
-            background-color: rgba(0, 0, 0, 0.8); 
+            background-color: transparent; /* Alterado de rgba(0, 0, 0, 0.8) para transparent */
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            box-shadow: none; /* Removido o box-shadow */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -156,6 +154,7 @@
             top: 10px;
         }
 
+        /* CORREÇÃO 1.2: Remove o quadrado preto transparente na frente da panela */
         #current-ingredients {
             height: 70px;
             width: 150px;
@@ -165,7 +164,7 @@
             justify-content: center;
             align-items: flex-end;
             gap: 5px;
-            background-color: rgba(0, 0, 0, 0.4); 
+            background-color: transparent; /* Alterado de rgba(0, 0, 0, 0.4) para transparent */
             border-radius: 5px;
             box-sizing: border-box;
             margin-bottom: 25px;
@@ -174,7 +173,8 @@
         .ingredient-in-pot {
             width: 30px; 
             height: 30px;
-            animation: drop-in 0.5s ease-out;
+            /* CORREÇÃO 2: Aumenta a duração da animação para cair mais lentamente */
+            animation: drop-in 1s ease-out; /* Alterado de 0.5s para 1s */
             border-radius: 50%;
             object-fit: cover;
             opacity: 0.9;
@@ -377,7 +377,7 @@
             to { opacity: 0; visibility: hidden; }
         }
         
-        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; background-color: #4CAF50; color: white; transition: background-color 0.3s; }
+        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 5_px; background-color: #4CAF50; color: white; transition: background-color 0.3s; }
         button:hover:enabled { background-color: #45a049; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
         #clear-pot-button { background-color: #f44336; }
@@ -883,7 +883,6 @@
                 if (playerName) {
                     await loadPlayerProgress(playerName);
                     
-                    // 3. CORREÇÃO JS: ESCONDE O LOGIN E MOSTRA O JOGO
                     loginScreen.style.display = 'none';
                     gameScreen.style.display = 'flex';
                     resultsScreen.style.display = 'none';
