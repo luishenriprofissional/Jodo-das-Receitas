@@ -341,6 +341,10 @@
             text-align: left;
             border: 1px solid gold;
         }
+        
+        #final-results h2 {
+            text-align: center;
+        }
 
         #scoreboard {
             display: flex;
@@ -1426,7 +1430,12 @@
                 let allScores = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    const date = data.submittedAt ? data.submittedAt.toDate() : new Date();
+                    let date = new Date(); // Fallback
+                    if (data.submittedAt && typeof data.submittedAt.toDate === 'function') {
+                        date = data.submittedAt.toDate();
+                    } else if (data.submittedAt instanceof Date) {
+                         date = data.submittedAt;
+                    }
                     
                     const formattedDateTime = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {
                         hour: '2-digit',
@@ -1481,7 +1490,7 @@
             }
         }
         
-        // NOVO: Função para exibir resultados anteriores
+        // CORREÇÃO DE ERRO: Função para exibir resultados anteriores (mais robusta)
         async function showPreviousResults(nick) {
             
             loginScreen.style.display = 'none';
@@ -1513,13 +1522,25 @@
 
                 if (!snapshot.empty) {
                     const data = snapshot.docs[0].data();
-                    const date = data.submittedAt ? data.submittedAt.toDate() : new Date();
+                    
+                    // --- CORREÇÃO DE TRATAMENTO DE DATA/HORA APLICADA AQUI ---
+                    let date;
+                    if (data.submittedAt && typeof data.submittedAt.toDate === 'function') {
+                        date = data.submittedAt.toDate();
+                    } else if (data.submittedAt instanceof Date) {
+                         date = data.submittedAt;
+                    } else {
+                        // Fallback para evitar erro se o campo for nulo ou inválido
+                        date = new Date(); 
+                    }
+                    
                     const formattedDateTime = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {
                         hour: '2-digit', minute: '2-digit', second: '2-digit'
                     });
+                    // --- FIM CORREÇÃO DE TRATAMENTO DE DATA/HORA ---
 
                     document.getElementById('player-previous-result').innerHTML = `
-                        <p>Seu **melhor tempo de jogo** registrado:</p>
+                        <p>Seu <strong>melhor tempo de jogo</strong> registrado:</p>
                         <p><strong>Tempo:</strong> ${data.timeFormatted}</p>
                         <p><strong>Receitas:</strong> ${data.recipesCompleted}/${WIN_COUNT}</p>
                         <p><strong>Envio:</strong> ${formattedDateTime}</p>
@@ -1529,8 +1550,9 @@
                     document.getElementById('player-previous-result').innerHTML = `<p>Não foi encontrado um score finalizado para ${nick}.</p>`;
                 }
             } catch (error) {
+                // Loga o erro detalhado para o debug
                 console.error("Erro ao carregar resultado anterior:", error);
-                document.getElementById('player-previous-result').innerHTML = `<p>Erro ao carregar seu resultado.</p>`;
+                document.getElementById('player-previous-result').innerHTML = `<p style="color:red;">Erro ao carregar seu resultado. (Verifique o console para detalhes)</p>`;
             }
 
             loadScoreboard();
@@ -1586,7 +1608,7 @@
                         playerStatusMessage.textContent = `Usuário cadastrado e com score finalizado.`;
                         viewResultsButton.style.display = 'block';
                         startGameButton.textContent = 'Começar Novo Jogo';
-                        startGameButton.disabled = true; // <--- CORREÇÃO: IMPEDE O INÍCIO DO JOGO
+                        startGameButton.disabled = true; // <--- IMPEDE O INÍCIO DO JOGO
                     } else {
                         // 3. Se NÃO JOGOU, habilita o botão 'Começar'
                         playerStatusMessage.textContent = ``;
@@ -1611,7 +1633,7 @@
                     return;
                 }
                 
-                // Só permite iniciar se o botão não estiver desabilitado (ou seja, se ele for um novo jogador, ou se foi re-habilitado)
+                // Só permite iniciar se o botão não estiver desabilitado 
                 if (playerName && !startGameButton.disabled) {
                     // O fluxo de "Começar" sempre inicia o jogo
                     await loadPlayerProgress(playerName);
