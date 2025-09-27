@@ -15,187 +15,242 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #f4f4f9; /* Fundo neutro */
+            background-color: #f4f4f9;
         }
 
         #app-container {
-            /* O CONTAINER PRINCIPAL DO JOGO */
-            background-color: #fff;
-            border: 2px solid #333;
-            padding: 30px;
+            /* Mudei o tamanho máximo para acomodar o fundo da cozinha */
+            width: 100%;
+            height: 100vh;
+            box-sizing: border-box;
+            
+            /* Removemos o fundo branco aqui para que a cozinha apareça */
+            background-color: transparent; 
+            border: none; 
+            box-shadow: none;
+            
+            /* Centraliza o conteúdo (login/jogo) */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* --- Fundo da Cozinha (APLICADO AO CONTAINER PARA GARANTIR PREENCHIMENTO) --- */
+        #game-screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            
+            /* --- INÍCIO: FUNDO DE COZINHA GIF --- */
+            background-image: url('https://i.imgur.com/qKjBc1w.gif');
+            background-size: 100% 100%; /* Faz a imagem preencher completamente a tela */
+            background-repeat: no-repeat;
+            background-position: center;
+            /* FIM: FUNDO DE COZINHA GIF */
+            
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            padding: 0; /* Remove padding para usar a tela inteira */
+        }
+        
+        /* O conteúdo do jogo (textos, botões, etc.) será centralizado dentro do #game-screen */
+        #game-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%; /* Ajuste o tamanho da área de conteúdo */
+            max-width: 900px;
+            background-color: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente para legibilidade */
+            padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            width: 800px;
-            max-width: 90%;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
         }
 
         /* --- Estilo da Tela de Login --- */
         #login-screen {
             padding: 40px 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: relative; /* Para ficar acima do fundo */
         }
 
-        #login-screen h1 {
-            color: #4CAF50;
-            margin-bottom: 30px;
-        }
+        #login-screen h1 { color: #4CAF50; }
+        #login-form input { padding: 10px; margin-right: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; width: 250px; }
+        #login-form button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; background-color: #4CAF50; color: white; transition: background-color 0.3s; }
+        #login-form button:hover:enabled { background-color: #45a049; }
+        #login-form button:disabled { background-color: #ccc; cursor: not-allowed; }
 
-        #login-form input {
-            padding: 10px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            width: 250px;
-        }
-
-        #login-form button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            background-color: #4CAF50;
-            color: white;
-            transition: background-color 0.3s;
-        }
-
-        /* --- Estilos da Tela do Jogo (FUNDO GIF) --- */
-        #game-screen {
-            display: none; /* Esconde a tela do jogo inicialmente */
-            
-            /* --- INÍCIO: FUNDO DE COZINHA GIF --- */
-            background-image: url('https://i.imgur.com/qKjBc1w.gif');
-            background-size: cover;
-            background-position: center bottom; /* Ajustado para melhor visualização do fogão */
-            padding: 20px;
-            border-radius: 8px;
-            /* Garante que o texto seja legível sobre o fundo da imagem */
-            color: white; /* Cor da fonte branca para contraste com o fundo escuro */
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-            /* FIM: FUNDO DE COZINHA GIF */
-        }
-        
-        #game-screen h1 {
-            color: white;
-            text-shadow: 2px 2px 3px black;
-        }
-
+        /* --- ESTILOS DA PANELA (IMAGEM E ZONA DE DROP) --- */
         #stove-area {
             display: flex;
             justify-content: center;
             margin: 20px 0;
             position: relative;
-            height: 300px; /* Altura para posicionar a panela na parte de cima */
+            height: 250px; /* Altura para posicionar a panela */
         }
         
-        /* --- ESTILOS DA PANELA (IMAGEM E ZONA DE DROP) --- */
         #pot-dropzone {
-            /* Posiciona a zona de drop sobre o fogão (parte de cima do stove-area) */
+            /* A panela é o background e a área de drop */
             position: absolute;
-            top: 20px; /* Ajuste vertical para alinhar com o GIF */
-            width: 200px;
-            height: 200px; 
+            top: 10px; 
+            width: 250px; 
+            height: 250px; 
             
-            /* Imagem da Panela como Fundo */
-            background-image: url('https://i.imgur.com/yzVztQL.png');
+            background-image: url('https://i.imgur.com/D4TbjuJ.png'); /* Nova Panela */
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             
-            /* Torna a área de drop invisível, mas interativa */
             background-color: transparent;
-            border: 2px dashed rgba(255, 255, 255, 0.5); /* Borda para demarcar a área de drop (pode ser removida) */
-            border-radius: 50%; /* Tenta simular a forma da panela */
+            border: none;
             
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
             font-weight: bold;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-        }
-        
-        #pot-dropzone p {
-            margin: 0;
-            font-size: 14px;
+            justify-content: flex-start; /* Alinha ingredientes na parte de cima da panela */
+            padding-top: 50px; /* Espaço para a "boca" da panela */
         }
 
         #current-ingredients {
-            min-height: 50px;
-            width: 100%;
-            margin-top: 5px;
+            min-height: 100px;
+            width: 80%;
             padding: 5px;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             gap: 5px;
-            /* Fundo transparente para os ingredientes na panela */
-            background-color: rgba(0, 0, 0, 0.3); 
+            background-color: rgba(0, 0, 0, 0.4); /* Fundo escuro para os ingredientes dentro da panela */
             border-radius: 5px;
+            box-sizing: border-box;
+            position: relative;
         }
-
-        #ingredients-area {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.85); /* Fundo claro para ingredientes */
-            color: black;
-            text-shadow: none;
-        }
-
-        .ingredient {
-            cursor: grab;
-            padding: 8px 12px;
-            background-color: #7fffd4;
-            border: 1px solid #3cb371;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: transform 0.1s ease-in-out;
-        }
-
+        
         .ingredient-in-pot {
             background-color: #ff9800;
             color: white;
             padding: 4px 6px;
             border-radius: 3px;
             font-size: 12px;
+            /* Animação de queda */
+            animation: drop-in 0.5s ease-out;
         }
 
-        .highlight {
-            border: 3px dashed yellow !important; /* Destaque amarelo ao arrastar */
+        @keyframes drop-in {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
         }
 
-        button {
+        /* --- ÁREA DE INGREDIENTES (AGORA IMAGENS) --- */
+        #ingredients-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
             margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.85);
+            color: black;
+            text-shadow: none;
+        }
+
+        .ingredient {
+            cursor: grab;
+            width: 60px; /* Tamanho fixo para a imagem */
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid transparent;
             border-radius: 5px;
-            background-color: #4CAF50;
+            position: relative;
+            transition: border-color 0.2s;
+        }
+        
+        .ingredient:hover {
+            border-color: #4CAF50; /* Destaca ao passar o mouse */
+        }
+
+        .ingredient img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        /* O nome aparecerá ao passar o mouse (usando atributo title) */
+        .ingredient::before {
+            content: attr(data-name); /* Usa o nome do ingrediente */
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
             color: white;
-            transition: background-color 0.3s;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .ingredient:hover::before {
+            opacity: 1; /* Mostra o nome ao passar o mouse */
+        }
+        
+        /* --- FEEDBACK VISUAL (POPUP DE RECEITA PRONTA) --- */
+        #recipe-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+            animation: fade-out 0.5s 4.5s forwards; /* Começa a desaparecer em 4.5s */
+            opacity: 1;
+        }
+        
+        #recipe-popup img {
+            max-width: 500px;
+            max-height: 500px;
+            border: 5px solid gold;
+            border-radius: 10px;
+            animation: zoom-in 0.5s ease-out;
+        }
+        
+        #recipe-popup h2 {
+            color: gold;
+            margin-top: 20px;
+            font-size: 2em;
+        }
+        
+        @keyframes zoom-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes fade-out {
+            to { opacity: 0; visibility: hidden; }
         }
 
-        button:hover:enabled {
-            background-color: #45a049;
-        }
-
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        #clear-pot-button {
-            background-color: #f44336;
-            margin-left: 10px;
-        }
+        /* --- BOTÕES E GERAL --- */
+        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; background-color: #4CAF50; color: white; transition: background-color 0.3s; }
+        button:hover:enabled { background-color: #45a049; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #clear-pot-button { background-color: #f44336; margin-left: 10px; }
     </style>
 </head>
 <body>
@@ -211,26 +266,31 @@
         </div>
 
         <div id="game-screen">
-            <h1>Mini-Jogo: Chef em Ação</h1>
-            <p id="status-text">Arraste os ingredientes para a panela e complete 3 receitas!</p>
-            <p id="recipe-counter">Receitas Completas: 0/3</p>
+            <div id="game-content">
+                <h1>Mini-Jogo: Chef em Ação</h1>
+                <p id="status-text">Arraste os ingredientes para a panela e complete 3 receitas!</p>
+                <p id="recipe-counter">Receitas Completas: 0/3</p>
 
-            <div id="stove-area">
-                <div id="pot-dropzone">
-                    <p>SOLTE OS INGREDIENTES AQUI</p>
-                    <div id="current-ingredients"></div>
+                <div id="stove-area">
+                    <div id="pot-dropzone">
+                        <p>SOLTE OS INGREDIENTES AQUI</p>
+                        <div id="current-ingredients"></div>
+                    </div>
                 </div>
+
+                <div id="ingredients-area">
+                    </div>
+
+                <button id="check-recipe-button" disabled>Verificar Receita</button>
+                <button id="clear-pot-button">Limpar Panela</button>
             </div>
-
-            <div id="ingredients-area">
-                </div>
-
-            <button id="check-recipe-button" disabled>Verificar Receita</button>
-            <button id="clear-pot-button">Limpar Panela</button>
-
-            <audio id="drop-sound" src="ding.mp3" preload="auto"></audio>
         </div>
+        
+        <div id="recipe-popup" style="display:none;"></div>
     </div>
+
+    <audio id="drop-sound" src="ding.mp3" preload="auto"></audio>
+    <audio id="plin-sound" src="plin.mp3" preload="auto"></audio>
 
     <script>
         // Substitua APENAS estes dados pela sua configuração do Firebase da imagem
@@ -250,18 +310,38 @@
         
         // --- DADOS DO JOGO (Regras) ---
         const ALL_RECIPES = {
-            'bolo_chocolate': { name: 'Bolo de Chocolate', ingredients: ['Ovos', 'Leite', 'Trigo', 'Chocolate', 'Fermento', 'Açúcar'] },
-            'bife_pure': { name: 'Bife com Purê', ingredients: ['Bife', 'Purê de batata'] },
-            'sanduiche': { name: 'Sanduíche Natural', ingredients: ['Pão', 'Queijo', 'Presunto'] },
-            'macarrao_almondegas': { name: 'Macarrão c/ Almôndegas', ingredients: ['Macarrão', 'Molho de tomate', 'Almôndegas'] },
-            'prato_feito': { name: 'Prato Feito (PF)', ingredients: ['Arroz', 'Feijão', 'Bife'] }
+            'bolo_chocolate': { name: 'Bolo de Chocolate', ingredients: ['Ovos', 'Leite', 'Trigo', 'Chocolate', 'Fermento', 'Açúcar'], image: 'https://i.imgur.com/4YaPJOb.png' },
+            'bife_pure': { name: 'Bife com Purê', ingredients: ['Bife', 'Purê de batata'], image: 'https://i.imgur.com/scwnbTb.png' },
+            'sanduiche': { name: 'Sanduíche Natural', ingredients: ['Pão', 'Queijo', 'Presunto'], image: 'https://i.imgur.com/Kfz9W6C.png' },
+            'macarrao_almondegas': { name: 'Macarrão c/ Almôndegas', ingredients: ['Macarrão', 'Molho de tomate', 'Almôndegas'], image: 'https://i.imgur.com/Ba3SSsy.png' },
+            'prato_feito': { name: 'Prato Feito (PF)', ingredients: ['Arroz', 'Feijão', 'Bife'], image: 'https://i.imgur.com/Lz1KNJ5.png' },
+            'hamburguer_fritas': { name: 'Hambúrguer com Fritas', ingredients: ['Hambúrguer', 'Batata frita'], image: 'https://i.imgur.com/6RYgBZV.png' }
         };
 
-        const ALL_INGREDIENTS = [
-            'Macarrão', 'Molho de tomate', 'Alface', 'Cebola', 'Maçã', 'Ovos', 'Leite',
-            'Chocolate', 'Trigo', 'Fermento', 'Açúcar', 'Pão', 'Queijo', 'Presunto',
-            'Bacon', 'Bife', 'Purê de batata', 'Batata fritas', 'Arroz', 'Feijão', 'Almôndegas'
-        ];
+        const ALL_INGREDIENTS_DATA = {
+            'Macarrão': 'https://i.imgur.com/EZdzCrc.png',
+            'Molho de tomate': 'https://i.imgur.com/mZqMrpE.png',
+            'Alface': 'https://i.imgur.com/IuJn6iK.png',
+            'Cebola': 'https://i.imgur.com/cwhBZ8f.png',
+            'Maçã': 'https://i.imgur.com/UylUNIm.png',
+            'Ovos': 'https://i.imgur.com/RsZ5v0Q.png',
+            'Leite': 'https://i.imgur.com/OITOWvS.png',
+            'Chocolate': 'https://i.imgur.com/ph8egSw.png',
+            'Trigo': 'https://i.imgur.com/00kWkYc.png',
+            'Fermento': 'https://i.imgur.com/eVdrIN0.png',
+            'Açúcar': 'https://i.imgur.com/KY6P9qE.png',
+            'Pão': 'https://i.imgur.com/aWCvXst.png',
+            'Queijo': 'https://i.imgur.com/GxZwQWv.png',
+            'Presunto': 'https://i.imgur.com/UMfcQlS.png',
+            'Bacon': 'https://i.imgur.com/SPyO8GZ.png',
+            'Bife': 'https://i.imgur.com/Q5qKMtR.png',
+            'Purê de batata': 'https://i.imgur.com/CmpoPvh.png',
+            'Batata frita': 'https://i.imgur.com/9dJOSEd.png',
+            'Arroz': 'https://i.imgur.com/Sk3hkFu.png',
+            'Feijão': 'https://i.imgur.com/lwrbsUQ.png',
+            'Almôndegas': 'https://i.imgur.com/blGMtBW.png',
+            'Hambúrguer': 'https://i.imgur.com/HYzjOL5.png' // Novo Ingrediente
+        };
 
         // --- VARIÁVEIS DE ESTADO ---
         let playerName = null;
@@ -285,6 +365,9 @@
         const checkRecipeButton = document.getElementById('check-recipe-button');
         const clearPotButton = document.getElementById('clear-pot-button');
         const dropSound = document.getElementById('drop-sound');
+        const plinSound = document.getElementById('plin-sound');
+        const recipePopup = document.getElementById('recipe-popup');
+
 
         // --- LÓGICA DE LOGIN/INICIALIZAÇÃO ---
 
@@ -295,7 +378,6 @@
         startGameButton.addEventListener('click', async () => {
             playerName = nicknameInput.value.trim();
             if (playerName) {
-                // Tenta carregar o progresso existente ou cria um novo
                 await loadPlayerProgress(playerName);
                 loginScreen.style.display = 'none';
                 gameScreen.style.display = 'block';
@@ -304,9 +386,6 @@
             }
         });
 
-        /**
-         * Carrega o progresso do jogador do Firebase ou inicializa.
-         */
         async function loadPlayerProgress(nick) {
             try {
                 const docRef = db.collection('jogadores').doc(nick);
@@ -317,7 +396,6 @@
                     recipesCompleted = data.recipesCompleted || [];
                     playerStatusMessage.textContent = `Progresso de ${nick} carregado. Receitas feitas: ${recipesCompleted.length}.`;
                 } else {
-                    // Novo jogador, cria o documento
                     await docRef.set({
                         nick: nick,
                         recipesCompleted: [],
@@ -332,11 +410,8 @@
             }
         }
 
-        // --- LÓGICA DE JOGO ---
+        // --- FUNÇÕES DE JOGO PRINCIPAIS ---
 
-        /**
-         * Normaliza e compara duas listas de ingredientes.
-         */
         function areListsEqual(list1, list2) {
             if (list1.length !== list2.length) return false;
             const sorted1 = [...list1].sort();
@@ -344,33 +419,31 @@
             return sorted1.every((value, index) => value === sorted2[index]);
         }
 
-        /**
-         * Verifica se os ingredientes na panela formam uma receita.
-         */
         async function checkRecipe() {
             if (gameWon) return;
 
             const currentCombo = [...ingredientsInPot];
             let foundRecipeId = null;
-            let foundRecipeName = null;
+            let foundRecipeData = null;
 
             for (const [id, recipe] of Object.entries(ALL_RECIPES)) {
                 if (recipesCompleted.includes(id)) {
-                    continue; // Pula receitas já feitas
+                    continue; 
                 }
 
                 if (areListsEqual(currentCombo, recipe.ingredients)) {
                     foundRecipeId = id;
-                    foundRecipeName = recipe.name;
+                    foundRecipeData = recipe;
                     break;
                 }
             }
 
             if (foundRecipeId) {
-                // Receita encontrada!
                 recipesCompleted.push(foundRecipeId);
-                statusText.textContent = `PARABÉNS! Você fez um(a) ${foundRecipeName}!`;
                 
+                // Exibe o popup da comida feita
+                showRecipePopup(foundRecipeData.name, foundRecipeData.image);
+
                 // Limpa a panela e reseta o estado local
                 ingredientsInPot = [];
                 updatePotDisplay();
@@ -391,10 +464,32 @@
                 statusText.textContent = `Essa combinação (${currentCombo.join(', ')}) não resulta em uma receita nova. Tente limpar e começar de novo.`;
             }
         }
+        
+        function showRecipePopup(name, imageUrl) {
+            plinSound.currentTime = 0;
+            plinSound.play();
+            
+            recipePopup.innerHTML = `
+                <h2>Receita Pronta: ${name}!</h2>
+                <img src="${imageUrl}" alt="${name}">
+            `;
+            recipePopup.style.display = 'flex';
+            
+            // Remove o popup após 5 segundos
+            setTimeout(() => {
+                recipePopup.style.display = 'none';
+                // Reset a animação para a próxima vez
+                recipePopup.style.opacity = 1;
+                recipePopup.style.animation = 'none';
+                setTimeout(() => {
+                    recipePopup.style.animation = 'fade-out 0.5s 4.5s forwards';
+                }, 10); // Pequeno timeout para resetar a animação
+                
+                // Atualiza o status do jogo após o popup
+                statusText.textContent = `Você fez um(a) ${name}! Próxima receita...`;
+            }, 5000); 
+        }
 
-        /**
-         * Salva o progresso do jogador no Firebase.
-         */
         async function saveProgressToFirebase() {
             if (!playerName) return;
             try {
@@ -407,9 +502,6 @@
             }
         }
 
-        /**
-         * Adiciona um ingrediente à panela.
-         */
         function addIngredientToPot(ingredientName) {
             if (gameWon) return;
             
@@ -425,16 +517,21 @@
             statusText.textContent = `${ingredientName} adicionado.`;
         }
 
-        /**
-         * Atualiza o contador de receitas e o status geral.
-         */
+        function updatePotDisplay() {
+            currentIngredientsDiv.innerHTML = '';
+            ingredientsInPot.forEach(ing => {
+                const span = document.createElement('span');
+                span.textContent = ing;
+                span.className = 'ingredient-in-pot';
+                currentIngredientsDiv.appendChild(span);
+            });
+            checkRecipeButton.disabled = ingredientsInPot.length === 0;
+        }
+
         function updateGameDisplay() {
             recipeCounter.textContent = `Receitas Completas: ${recipesCompleted.length}/${WIN_COUNT}`;
         }
 
-        /**
-         * Limpa todos os ingredientes da panela.
-         */
         function clearPot() {
             ingredientsInPot = [];
             updatePotDisplay();
@@ -444,7 +541,8 @@
         // --- LÓGICA DO DRAG-AND-DROP ---
 
         function dragStart(e) {
-            e.dataTransfer.setData('text/plain', e.target.textContent);
+            // Usa o atributo data-name para transferir o nome
+            e.dataTransfer.setData('text/plain', e.target.getAttribute('data-name'));
             e.target.style.opacity = '0.5';
         }
 
@@ -477,19 +575,29 @@
             addIngredientToPot(ingredientName);
         }
 
-        // --- INICIALIZAÇÃO DO JOGO ---
+        // --- INICIALIZAÇÃO DO JOGO (COM IMAGENS) ---
 
         function initializeIngredients() {
             ingredientsArea.innerHTML = '';
-            ALL_INGREDIENTS.forEach(ing => {
+            for (const name in ALL_INGREDIENTS_DATA) {
+                const url = ALL_INGREDIENTS_DATA[name];
+                
                 const div = document.createElement('div');
-                div.textContent = ing;
                 div.className = 'ingredient';
                 div.setAttribute('draggable', true);
+                div.setAttribute('data-name', name); // Armazena o nome
+                div.setAttribute('title', name); // Tooltip nativo (além do CSS hover)
+
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = name; // Alt é usado para acessibilidade e fallback
+                
+                div.appendChild(img);
+                
                 div.addEventListener('dragstart', dragStart);
                 div.addEventListener('dragend', dragEnd);
                 ingredientsArea.appendChild(div);
-            });
+            }
         }
 
         function attachListeners() {
