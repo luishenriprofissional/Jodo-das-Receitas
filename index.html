@@ -36,6 +36,7 @@
             position: relative;
         }
 
+        /* TELA DE LOGIN */
         #login-screen {
             display: block; 
             text-align: center;
@@ -54,6 +55,7 @@
             margin-bottom: 20px;
         }
 
+        /* TELA DE JOGO */
         #game-screen {
             display: none; 
             width: 100%;
@@ -76,15 +78,56 @@
             z-index: 5;
         }
         
-        /* CORREÇÃO 1.1: Remove o fundo transparente preto do game-content */
+        /* NOVO ESTILO: Lista de Ingredientes Lateral */
+        #side-ingredients-list {
+            position: absolute;
+            top: 20%;
+            left: 20px;
+            width: 200px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            z-index: 8; 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-height: 50%;
+            overflow-y: auto;
+        }
+        
+        #side-ingredients-list h3 {
+            margin-top: 0;
+            border-bottom: 1px solid white;
+            padding-bottom: 5px;
+        }
+
+        #pot-list-display {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+            font-size: 0.9em;
+        }
+        
+        #pot-list-display li {
+            padding: 3px 0;
+            animation: slide-in 0.3s ease-out;
+        }
+        
+        @keyframes slide-in {
+            0% { opacity: 0; transform: translateX(-10px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Fundo do Game Content agora é transparente */
         #game-content {
             position: relative;
             width: auto;
             max-width: 900px;
-            background-color: transparent; /* Alterado de rgba(0, 0, 0, 0.8) para transparent */
+            background-color: transparent; 
             padding: 20px;
             border-radius: 10px;
-            box-shadow: none; /* Removido o box-shadow */
+            box-shadow: none; 
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -154,7 +197,7 @@
             top: 10px;
         }
 
-        /* CORREÇÃO 1.2: Remove o quadrado preto transparente na frente da panela */
+        /* Quadrado preto na frente da panela agora é transparente */
         #current-ingredients {
             height: 70px;
             width: 150px;
@@ -164,7 +207,7 @@
             justify-content: center;
             align-items: flex-end;
             gap: 5px;
-            background-color: transparent; /* Alterado de rgba(0, 0, 0, 0.4) para transparent */
+            background-color: transparent; 
             border-radius: 5px;
             box-sizing: border-box;
             margin-bottom: 25px;
@@ -173,8 +216,8 @@
         .ingredient-in-pot {
             width: 30px; 
             height: 30px;
-            /* CORREÇÃO 2: Aumenta a duração da animação para cair mais lentamente */
-            animation: drop-in 1s ease-out; /* Alterado de 0.5s para 1s */
+            /* Animação mais lenta (1s) */
+            animation: drop-in 1s ease-out; 
             border-radius: 50%;
             object-fit: cover;
             opacity: 0.9;
@@ -377,7 +420,7 @@
             to { opacity: 0; visibility: hidden; }
         }
         
-        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 5_px; background-color: #4CAF50; color: white; transition: background-color 0.3s; }
+        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; background-color: #4CAF50; color: white; transition: background-color 0.3s; }
         button:hover:enabled { background-color: #45a049; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
         #clear-pot-button { background-color: #f44336; }
@@ -398,6 +441,13 @@
 
         <div id="game-screen">
             <div id="timer">00:00</div>
+            
+            <div id="side-ingredients-list">
+                <h3>Ingredientes na Panela:</h3>
+                <ul id="pot-list-display">
+                    </ul>
+            </div>
+            
             <div id="game-content">
                 <h1>Mini-Jogo: Chef em Ação</h1>
                 <p id="status-text">Arraste os ingredientes para a panela e complete 3 receitas!</p>
@@ -531,6 +581,7 @@
         const currentIngredientsDiv = document.getElementById('current-ingredients');
         const statusText = document.getElementById('status-text');
         const recipeCounter = document.getElementById('recipe-counter');
+        const potListDisplay = document.getElementById('pot-list-display'); 
         const checkRecipeButton = document.getElementById('check-recipe-button');
         const clearPotButton = document.getElementById('clear-pot-button');
         const dropSound = document.getElementById('drop-sound');
@@ -581,7 +632,10 @@
         
         function updatePotDisplay() {
             currentIngredientsDiv.innerHTML = '';
+            potListDisplay.innerHTML = ''; // Limpa a lista lateral
+
             ingredientsInPot.forEach(ingName => {
+                // 1. Atualiza a exibição visual na panela
                 const img = document.createElement('img');
                 if (ALL_INGREDIENTS_DATA[ingName]) {
                     img.src = ALL_INGREDIENTS_DATA[ingName];
@@ -590,7 +644,13 @@
                     img.setAttribute('title', ingName);
                     currentIngredientsDiv.appendChild(img);
                 }
+                
+                // 2. Atualiza a lista lateral
+                const listItem = document.createElement('li');
+                listItem.textContent = `• ${ingName}`;
+                potListDisplay.appendChild(listItem);
             });
+            
             checkRecipeButton.disabled = ingredientsInPot.length === 0;
         }
 
@@ -659,15 +719,19 @@
             }
 
             ingredientsInPot.push(ingredientName);
+            
+            // CORREÇÃO DOS SONS: Reinicia e toca o som aqui
             dropSound.currentTime = 0;
-            dropSound.play();
+            dropSound.play().catch(e => console.error("Erro ao tocar drop-sound:", e));
+
             updatePotDisplay();
             statusText.textContent = `${ingredientName} adicionado.`;
         }
         
         function showRecipePopup(name, imageUrl) {
+            // CORREÇÃO DOS SONS: Reinicia e toca o som aqui
             plinSound.currentTime = 0;
-            plinSound.play();
+            plinSound.play().catch(e => console.error("Erro ao tocar plin-sound:", e));
             
             recipePopup.innerHTML = `
                 <h2>Receita Pronta: ${name}!</h2>
@@ -688,8 +752,10 @@
         }
 
         function showErrorPopup() {
+            // CORREÇÃO DOS SONS: Reinicia e toca o som aqui
             errorSound.currentTime = 0;
-            errorSound.play();
+            errorSound.play().catch(e => console.error("Erro ao tocar error-sound:", e));
+            
             errorPopup.style.display = 'flex';
             
             setTimeout(() => {
