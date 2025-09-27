@@ -491,6 +491,7 @@
             text-align: left;
         }
         
+        /* NOVO: Ajuste de coluna para incluir data/hora de exclusão */
         .admin-score-item {
             display: grid;
             grid-template-columns: 150px 80px 100px 1fr 100px;
@@ -509,7 +510,8 @@
         }
 
         #trash-list-container .admin-score-item {
-            grid-template-columns: 150px 80px 100px 1fr 120px;
+             /* AJUSTADO: Ação da lixeira é maior */
+            grid-template-columns: 150px 80px 100px 1fr 120px; 
         }
         
         .btn-delete { background-color: #f44336; padding: 5px 10px; }
@@ -606,6 +608,7 @@
             <div class="modal-content">
                 <h2>Login de Administrador</h2>
                 <p>Digite a senha para acessar o painel de controle.</p>
+                <input type="text" id="admin-nickname-input" placeholder="Nickname Admin">
                 <input type="password" id="admin-password-input" placeholder="Senha">
                 <button id="admin-login-button">Entrar</button>
                 <button onclick="closeAdminLogin()">Voltar</button>
@@ -617,13 +620,13 @@
             
             <div id="admin-controls">
                 <button id="btn-show-lixeira" class="btn-admin">🗑️ Lixeira</button>
-                <button id="btn-add-user" class="btn-admin">➕ Adicionar Usuário</button>
+                <button id="btn-add-user" class="btn-admin">➕ Adicionar Score Manual</button>
                 <button id="btn-view-podium" class="btn-admin">🏆 Ver Pódio/Histórico</button>
-                <button id="btn-admin-logout" class="btn-delete">🚪 Voltar ao Menu</button>
+                <button id="btn-admin-logout" class="btn-delete">🚪 Sair do Painel</button>
             </div>
 
             <div id="score-list-container">
-                <h2>Histórico Completo de Scores</h2>
+                <h2>Histórico Completo de Scores (Ativos)</h2>
                 <div class="admin-score-item admin-score-header">
                     <span>Nickname</span>
                     <span>Tempo</span>
@@ -658,7 +661,7 @@
                         <span>Nickname</span>
                         <span>Tempo</span>
                         <span>Receitas</span>
-                        <span>Data/Hora Excluída</span>
+                        <span>Data/Hora Excluída</span> 
                         <span>Ação</span>
                     </div>
                     <div id="admin-trash-body">
@@ -675,6 +678,7 @@
                 <form id="add-score-form" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
                     <input type="text" id="manual-nick" placeholder="Nickname" required>
                     <input type="text" id="manual-time" placeholder="Tempo (Ex: 01:25)" required pattern="\d{2}:\d{2}">
+                    <input type="number" id="manual-recipes" placeholder="Receitas (Ex: 3)" required min="1" max="3"> 
                     <input type="datetime-local" id="manual-datetime" required>
                     <small>Formato de tempo: MM:SS (Minutos e Segundos)</small>
                     <button type="submit" id="add-manual-button">Adicionar Score</button>
@@ -706,7 +710,8 @@
         const db = app.firestore();
         
         // --- ADMIN CONSTANTES ---
-        const ADMIN_NICK = "admin123";
+        // ALTERAÇÃO: Adicionado ADMIN_NICK para login
+        const ADMIN_NICK = "admin123"; 
         const ADMIN_PASSWORD = "12345678";
 
         // --- DADOS DO JOGO (Regras) ---
@@ -717,7 +722,8 @@
             'macarrao_almondegas': { name: 'Macarrão c/ Almôndegas', ingredients: ['Macarrão', 'Molho de tomate', 'Almôndegas'], image: 'https://i.imgur.com/Ba3SSsy.png' },
             'prato_feito': { name: 'Prato Feito (PF)', ingredients: ['Arroz', 'Feijão', 'Bife'], image: 'https://i.imgur.com/Lz1KNJ5.png' },
             'hamburguer_fritas': { name: 'Hambúrguer com Fritas', ingredients: ['Hambúrguer', 'Batata frita'], image: 'https://i.imgur.com/6RYgBZV.png' },
-            'bacon_ovos': { name: 'Bacon com Ovos', ingredients: ['Ovos', 'Bacon'], image: 'https://i.imgur.com/uQnXSnh.png' } // NOVA RECEITA
+            // NOVA RECEITA ADICIONADA
+            'bacon_ovos': { name: 'Bacon com Ovos', ingredients: ['Ovos', 'Bacon'], image: 'https://i.imgur.com/uQnXSnh.png' } 
         };
 
         const ALL_INGREDIENTS_DATA = {
@@ -735,7 +741,8 @@
             'Pão': 'https://i.imgur.com/aWCvXst.png',
             'Queijo': 'https://i.imgur.com/GxZwQWv.png',
             'Presunto': 'https://i.imgur.com/UMfcQlS.png',
-            'Bacon': 'https://i.imgur.com/SPyO8GZ.png',
+            // Ingrediente da Nova Receita
+            'Bacon': 'https://i.imgur.com/SPyO8GZ.png', 
             'Bife': 'https://i.imgur.com/Q5qKMtR.png',
             'Purê de batata': 'https://i.imgur.com/CmpoPvh.png',
             'Batata frita': 'https://i.imgur.com/9dJOSEd.png',
@@ -785,6 +792,8 @@
         
         // Novos elementos Admin
         const adminLoginPopup = document.getElementById('admin-login-popup');
+        // ALTERAÇÃO: Novo campo para Nickname Admin
+        const adminNicknameInput = document.getElementById('admin-nickname-input');
         const adminPasswordInput = document.getElementById('admin-password-input');
         const adminLoginButton = document.getElementById('admin-login-button');
         const adminPanel = document.getElementById('admin-panel');
@@ -797,6 +806,7 @@
         const adminTrashBody = document.getElementById('admin-trash-body');
         const adminAddScorePopup = document.getElementById('admin-add-score-popup');
         const addScoreForm = document.getElementById('add-score-form');
+        const manualRecipesInput = document.getElementById('manual-recipes'); // NOVO: Campo Receitas
         const adminPodiumView = document.getElementById('admin-podium-view');
         const adminPodiumSection = document.getElementById('admin-podium-section');
         const adminAllTimesSection = document.getElementById('admin-all-times-section');
@@ -813,7 +823,10 @@
         function timeToSeconds(timeStr) {
             const parts = timeStr.split(':');
             if (parts.length === 2) {
-                return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                // ALTERAÇÃO: O tempo deve ter minutos e segundos (MM:SS)
+                const minutes = parseInt(parts[0], 10);
+                const seconds = parseInt(parts[1], 10);
+                return minutes * 60 + seconds;
             }
             return 0; 
         }
@@ -864,681 +877,639 @@
                 listItem.textContent = `• ${ingName}`;
                 potListDisplay.appendChild(listItem);
             });
-            
+
             checkRecipeButton.disabled = ingredientsInPot.length === 0;
         }
 
-        function updateGameDisplay() {
-            recipeCounter.textContent = `Receitas Completas: ${recipesCompleted.length}/${WIN_COUNT}`;
+        function displayIngredients() {
+            ingredientsArea.innerHTML = '';
+            // Cria uma cópia dos nomes e embaralha
+            const shuffledIngredients = shuffleArray([...ALL_INGREDIENT_NAMES]);
+
+            shuffledIngredients.forEach(ingName => {
+                const ingDiv = document.createElement('div');
+                ingDiv.className = 'ingredient';
+                ingDiv.draggable = true;
+                ingDiv.setAttribute('data-name', ingName);
+
+                const img = document.createElement('img');
+                img.src = ALL_INGREDIENTS_DATA[ingName];
+                img.alt = ingName;
+                img.draggable = false; // Importante para o Drag and Drop
+
+                ingDiv.appendChild(img);
+                ingredientsArea.appendChild(ingDiv);
+
+                // Eventos Drag and Drop
+                ingDiv.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', ingName);
+                    setTimeout(() => ingDiv.style.opacity = '0.5', 0);
+                });
+                ingDiv.addEventListener('dragend', () => {
+                    ingDiv.style.opacity = '1';
+                });
+            });
         }
 
-        // --- LÓGICA DE JOGO ---
-        
-        async function checkRecipe() {
+        // --- LÓGICA DO JOGO ---
+
+        function startGame() {
+            const nickname = nicknameInput.value.trim();
+            if (nickname.toLowerCase() === ADMIN_NICK.toLowerCase()) {
+                // Tenta abrir o login de admin se o nick for 'admin123'
+                showAdminLogin();
+                return;
+            }
+            
+            if (nickname.length < 3 || nickname.length > 15) {
+                playerStatusMessage.textContent = "Nickname deve ter entre 3 e 15 caracteres.";
+                return;
+            }
+
+            playerName = nickname;
+            ingredientsInPot = [];
+            recipesCompleted = [];
+            gameTimeInSeconds = 0;
+            gameWon = false;
+            finishDate = null;
+            
+            loginScreen.style.display = 'none';
+            gameScreen.style.display = 'flex';
+            
+            statusText.textContent = "Arraste os ingredientes para a panela e complete 3 receitas!";
+            recipeCounter.textContent = `Receitas Completas: ${recipesCompleted.length}/${WIN_COUNT}`;
+            timerDisplay.textContent = "00:00";
+            
+            updatePotDisplay();
+            displayIngredients();
+            startTimer();
+        }
+
+        function checkRecipe() {
             if (gameWon) return;
 
-            const currentCombo = [...ingredientsInPot];
-            let foundRecipeId = null;
-            let foundRecipeData = null;
+            // Transforma os ingredientes atuais em um array ordenado para comparação
+            const currentSortedIngredients = [...ingredientsInPot].sort();
+            let recipeFound = null;
 
-            for (const [id, recipe] of Object.entries(ALL_RECIPES)) {
-                if (recipesCompleted.includes(id)) {
-                    continue; 
-                }
+            // Busca por uma receita que corresponda aos ingredientes
+            for (const key in ALL_RECIPES) {
+                const recipe = ALL_RECIPES[key];
+                const recipeSortedIngredients = [...recipe.ingredients].sort();
 
-                if (areListsEqual(currentCombo, recipe.ingredients)) {
-                    foundRecipeId = id;
-                    foundRecipeData = recipe;
+                if (areListsEqual(currentSortedIngredients, recipeSortedIngredients) && 
+                    !recipesCompleted.includes(key)) {
+                    
+                    recipeFound = { key, ...recipe };
                     break;
                 }
             }
 
-            if (foundRecipeId) {
-                recipesCompleted.push(foundRecipeId);
+            if (recipeFound) {
+                plinSound.play();
+                recipesCompleted.push(recipeFound.key);
+                showRecipePopup(recipeFound);
+                clearPot(false); // Limpa a panela, mas não reproduz som de erro
                 
-                showRecipePopup(foundRecipeData.name, foundRecipeData.image);
-
-                ingredientsInPot = [];
-                updatePotDisplay();
-                await savePlayerProgress(playerName);
+                recipeCounter.textContent = `Receitas Completas: ${recipesCompleted.length}/${WIN_COUNT}`;
                 
-                updateGameDisplay();
                 if (recipesCompleted.length >= WIN_COUNT) {
-                    gameWon = true;
-                    stopTimer();
-                    finishDate = new Date();
-                    endGame();
+                    winGame();
+                } else {
+                    // Reembaralha os ingredientes após o sucesso (melhora a experiência)
+                    displayIngredients(); 
+                    statusText.textContent = `Parabéns, ${playerName}! Receita [${recipeFound.name}] completa! Próxima...`;
                 }
 
             } else {
+                errorSound.play();
                 showErrorPopup();
-                statusText.textContent = `Receita Errada! Tente uma nova combinação ou limpe a panela.`;
-                ingredientsInPot = [];
-                updatePotDisplay();
+                clearPot(false); 
+                statusText.textContent = `Ops! Não encontramos uma receita válida com esses ingredientes. Tente novamente!`;
             }
         }
-        
-        function addIngredientToPot(ingredientName) {
-            if (gameWon) return;
+
+        function winGame() {
+            gameWon = true;
+            stopTimer();
+            finishDate = new Date();
             
-            if (ingredientsInPot.includes(ingredientName)) {
-                statusText.textContent = `${ingredientName} já está na panela!`;
-                return;
-            }
-
-            if (!ALL_INGREDIENTS_DATA[ingredientName]) {
-                console.error("Ingrediente inválido tentou ser adicionado:", ingredientName);
-                statusText.textContent = `Erro: Ingrediente desconhecido "${ingredientName}"`;
-                return;
-            }
-
-            ingredientsInPot.push(ingredientName);
+            // Exibe os resultados na tela de resultados
+            document.getElementById('res-nick').textContent = playerName;
+            document.getElementById('res-recipes').textContent = recipesCompleted.length;
+            document.getElementById('res-time').textContent = formatTime(gameTimeInSeconds);
+            document.getElementById('res-date').textContent = finishDate.toLocaleString('pt-BR');
             
-            dropSound.currentTime = 0;
-            dropSound.play().catch(e => console.error("Erro ao tocar drop-sound:", e));
+            gameScreen.style.display = 'none';
+            resultsScreen.style.display = 'flex';
+            saveResultsButton.style.display = 'block';
+            saveResultsButton.disabled = false;
+            
+            // Recarrega o placar
+            loadScoresAndDisplay();
+        }
 
+        function clearPot(playErrorSound = true) {
+            ingredientsInPot = [];
+            if (playErrorSound) {
+                // Só toca o som de erro se o jogador limpar intencionalmente
+                errorSound.play(); 
+                statusText.textContent = "Panela limpa! Arraste novos ingredientes.";
+            }
             updatePotDisplay();
-            statusText.textContent = `${ingredientName} adicionado.`;
         }
-        
-        function showRecipePopup(name, imageUrl) {
-            plinSound.currentTime = 0;
-            plinSound.play().catch(e => console.error("Erro ao tocar plin-sound:", e));
-            
+
+        function showRecipePopup(recipe) {
             recipePopup.innerHTML = `
-                <h2>Receita Pronta: ${name}!</h2>
-                <img src="${imageUrl}" alt="${name}">
+                <img src="${recipe.image}" alt="${recipe.name}">
+                <h2>Receita Completa: ${recipe.name}!</h2>
             `;
             recipePopup.style.display = 'flex';
-            
-            recipePopup.style.opacity = 1;
-            recipePopup.style.animation = 'none'; 
+            // O CSS tem uma animação fade-out de 5s
             setTimeout(() => {
+                 // Reseta a animação para reaparecer corretamente
+                recipePopup.style.animation = 'none'; 
+                recipePopup.offsetHeight; 
                 recipePopup.style.animation = 'fade-out 0.5s 4.5s forwards';
-            }, 10);
+                recipePopup.style.opacity = '1';
+            }, 10); 
             
+            // Esconde o popup após o tempo da animação
             setTimeout(() => {
                 recipePopup.style.display = 'none';
-                statusText.textContent = `Você fez um(a) ${name}! Próxima receita...`;
             }, 5000); 
         }
 
         function showErrorPopup() {
-            errorSound.currentTime = 0;
-            errorSound.play().catch(e => console.error("Erro ao tocar error-sound:", e));
-            
             errorPopup.style.display = 'flex';
-            
             setTimeout(() => {
                 errorPopup.style.display = 'none';
-            }, 3000);
+            }, 1500);
         }
+        
+        // --- FUNÇÕES DRAG AND DROP ---
+        potDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault(); 
+            potDropzone.style.border = '2px dashed gold';
+        });
 
-        async function initializeAudio() {
+        potDropzone.addEventListener('dragleave', (e) => {
+            potDropzone.style.border = 'none'; 
+        });
+
+        potDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            potDropzone.style.border = 'none'; 
+            
+            const ingredientName = e.dataTransfer.getData('text/plain');
+            if (ingredientName && !ingredientsInPot.includes(ingredientName)) {
+                dropSound.play();
+                ingredientsInPot.push(ingredientName);
+                updatePotDisplay();
+                statusText.textContent = `Adicionado: ${ingredientName}. Continue cozinhando...`;
+            } else if (ingredientsInPot.includes(ingredientName)) {
+                statusText.textContent = `${ingredientName} já está na panela!`;
+            } else {
+                // Caso algo não-ingrediente seja arrastado
+                statusText.textContent = "Por favor, arraste um ingrediente válido.";
+            }
+        });
+
+        // --- FIREBASE / SCOREBOARD ---
+        
+        /**
+         * Adiciona o score ao Firestore e marca como ativo (isDeleted: false).
+         */
+        async function saveScoreToFirestore(nickname, timeInSeconds, recipesCompleted, finishTime, isManual = false) {
             try {
-                await Promise.all([
-                    dropSound.play().then(() => dropSound.pause()),
-                    plinSound.play().then(() => plinSound.pause()),
-                    errorSound.play().then(() => errorSound.pause())
-                ]);
-                dropSound.currentTime = 0;
-                plinSound.currentTime = 0;
-                errorSound.currentTime = 0;
-
+                const formattedTime = formatTime(timeInSeconds);
+                await db.collection("scores").add({
+                    nickname: nickname,
+                    time: timeInSeconds,
+                    formattedTime: formattedTime,
+                    recipes: recipesCompleted,
+                    finishDate: finishTime.toISOString(),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    isDeleted: false, // Novo campo para lógica de lixeira
+                    isManual: isManual // Novo campo para scores manuais
+                });
+                console.log("Score salvo com sucesso!");
+                return true;
             } catch (error) {
-                console.warn("Falha no play inicial (mas interação de clique deve desbloquear).", error);
+                console.error("Erro ao salvar o score:", error);
+                alert("Erro ao salvar o resultado. Tente novamente mais tarde.");
+                return false;
             }
         }
+        
+        /**
+         * Carrega todos os scores ativos e excluídos, ordenando por tempo.
+         */
+        async function loadScores() {
+            try {
+                const snapshot = await db.collection("scores")
+                    .orderBy("isDeleted", "asc") // Ativos primeiro
+                    .orderBy("time", "asc")     // Ordena pelo tempo
+                    .get();
 
-        // --- ADMIN FUNÇÕES ---
+                const scores = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    finishDate: doc.data().finishDate ? new Date(doc.data().finishDate) : new Date(doc.data().timestamp.toDate()),
+                    recipes: doc.data().recipes || WIN_COUNT // Garante que receitas é 3 se não estiver definido
+                }));
+                
+                return scores;
+            } catch (error) {
+                console.error("Erro ao carregar scores:", error);
+                return [];
+            }
+        }
+        
+        function renderScoreboard(scores) {
+            podiumSection.innerHTML = `<h3>🏆 Pódio (Envios Mais Rápidos) 🏆</h3>`;
+            allTimesSection.innerHTML = `<h3>⏱️ Todos os Tempos ⏱️</h3>`;
+            
+            const activeScores = scores.filter(s => s.recipes >= WIN_COUNT && !s.isDeleted);
+
+            // Ordena ativos: 1º por tempo, 2º por data de envio (mais novo primeiro)
+            const sortedActiveScores = activeScores.sort((a, b) => {
+                if (a.time !== b.time) {
+                    return a.time - b.time; // Tempo ascendente
+                }
+                // Em caso de empate de tempo de jogo, o mais recente ganha (timestamp decrescente)
+                const dateA = a.timestamp ? a.timestamp.toDate().getTime() : Infinity;
+                const dateB = b.timestamp ? b.timestamp.toDate().getTime() : Infinity;
+                return dateB - dateA; 
+            });
+
+            // Pódio (Top 3)
+            sortedActiveScores.slice(0, 3).forEach((score, index) => {
+                const item = document.createElement('div');
+                let className = 'podium-item';
+                if (index === 0) className += ' gold';
+                else if (index === 1) className += ' silver';
+                else if (index === 2) className += ' bronze';
+
+                item.className = className;
+                item.innerHTML = `
+                    #${index + 1} - <strong>${score.nickname}</strong> (${score.formattedTime})
+                    <span style="font-size: 0.8em; display: block;">(${score.recipes} Receitas)</span>
+                `;
+                podiumSection.appendChild(item);
+            });
+            
+            // Lista de Todos os Tempos (ordenada pelo tempo)
+            sortedActiveScores.forEach((score) => {
+                const item = document.createElement('div');
+                item.className = 'all-times-item';
+                item.innerHTML = `
+                    <span>${score.nickname}</span>
+                    <span>${score.formattedTime}</span>
+                `;
+                allTimesSection.appendChild(item);
+            });
+            
+            if (sortedActiveScores.length === 0) {
+                 allTimesSection.innerHTML += '<p>Nenhum score ativo para exibir.</p>';
+                 podiumSection.innerHTML += '<p>Nenhum score ativo para exibir.</p>';
+            }
+        }
+        
+        async function loadScoresAndDisplay() {
+            const scores = await loadScores();
+            renderScoreboard(scores);
+        }
+
+        // --- FUNÇÕES ADMIN ---
 
         function showAdminLogin() {
             loginScreen.style.display = 'none';
             adminLoginPopup.style.display = 'flex';
+            adminNicknameInput.value = ADMIN_NICK; // Preenche o nick admin
             adminPasswordInput.value = '';
-            adminPasswordInput.focus();
         }
 
         function closeAdminLogin() {
             adminLoginPopup.style.display = 'none';
-            loginScreen.style.display = 'block';
+            loginScreen.style.display = 'flex';
         }
         
-        function closeAdminPodium() {
+        function openAdminPanel() {
+            adminLoginPopup.style.display = 'none';
+            adminPanel.style.display = 'flex';
+            // Garante que o histórico completo é o padrão ao entrar
+            scoreListContainer.style.display = 'block'; 
             adminPodiumView.style.display = 'none';
-            scoreListContainer.style.display = 'block';
             loadAdminScores();
         }
 
-        function loginAdmin() {
-            const enteredPassword = adminPasswordInput.value;
-            if (enteredPassword === ADMIN_PASSWORD) {
-                adminLoginPopup.style.display = 'none';
-                showAdminPanel();
+        function closeAdminPanel() {
+             adminPanel.style.display = 'none';
+             loginScreen.style.display = 'flex';
+        }
+
+        // ALTERAÇÃO: Login Admin verifica Nickname e Senha
+        adminLoginButton.addEventListener('click', () => {
+            const adminNick = adminNicknameInput.value.trim();
+            const password = adminPasswordInput.value;
+            
+            if (adminNick === ADMIN_NICK && password === ADMIN_PASSWORD) {
+                openAdminPanel();
             } else {
-                alert("Senha incorreta!");
-                adminPasswordInput.value = '';
-                adminPasswordInput.focus();
-            }
-        }
-
-        function showAdminPanel() {
-            gameScreen.style.display = 'none';
-            resultsScreen.style.display = 'none';
-            loginScreen.style.display = 'none';
-            adminPanel.style.display = 'block';
-            
-            adminPodiumView.style.display = 'none'; 
-            scoreListContainer.style.display = 'block';
-            
-            loadAdminScores();
-        }
-        
-        function adminLogout() {
-            adminPanel.style.display = 'none';
-            loginScreen.style.display = 'block';
-            nicknameInput.value = '';
-        }
-
-        function formatTimestamp(timestamp) {
-            if (timestamp && timestamp.toDate) {
-                const date = timestamp.toDate();
-                const d = date.toLocaleDateString('pt-BR');
-                const t = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                return `${d} ${t}`;
-            }
-            return 'N/A';
-        }
-
-        async function loadAdminScores(collectionName = 'scores', targetElement = adminScoreBody) {
-            targetElement.innerHTML = '<p>Carregando scores...</p>';
-            
-            try {
-                const snapshot = await db.collection(collectionName)
-                                         .orderBy('submittedAt', 'desc') 
-                                         .get();
-                
-                let html = '';
-                if (snapshot.empty) {
-                    html = `<p>Nenhum score encontrado ${collectionName === 'trash' ? 'na lixeira' : ''}.</p>`;
-                } else {
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        const docId = doc.id;
-                        const timeStr = data.timeFormatted || formatTime(data.timeInSeconds || 0);
-                        const recipes = data.recipesCompleted || 0;
-                        const submittedAt = formatTimestamp(data.submittedAt || data.deletedAt);
-                        
-                        let actionButton;
-                        if (collectionName === 'trash') {
-                            actionButton = `<button class="btn-restore" onclick="restoreScore('${docId}')">Restaurar</button>`;
-                        } else {
-                            actionButton = `<button class="btn-delete" onclick="deleteScore('${docId}')">Excluir</button>`;
-                        }
-
-                        html += `
-                            <div class="admin-score-item">
-                                <span>${data.nick}</span>
-                                <span>${timeStr}</span>
-                                <span>${recipes}</span>
-                                <span>${submittedAt}</span>
-                                <span>${actionButton}</span>
-                            </div>
-                        `;
-                    });
-                }
-                targetElement.innerHTML = html;
-            } catch (error) {
-                console.error("Erro ao carregar scores do Admin:", error);
-                targetElement.innerHTML = '<p>Erro ao carregar dados do Firebase.</p>';
-            }
-        }
-        
-        async function deleteScore(docId) {
-            if (!confirm("Tem certeza que deseja excluir este score? Ele será movido para a Lixeira.")) return;
-            
-            try {
-                const scoreRef = db.collection('scores').doc(docId);
-                const doc = await scoreRef.get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    await db.collection('trash').add({
-                        ...data,
-                        deletedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    await scoreRef.delete();
-                    alert("Score movido para a Lixeira com sucesso!");
-                    loadAdminScores();
-                }
-            } catch (error) {
-                console.error("Erro ao excluir score:", error);
-                alert("Erro ao excluir score.");
-            }
-        }
-
-        async function restoreScore(docId) {
-            if (!confirm("Tem certeza que deseja restaurar este score? Ele voltará para o Histórico principal.")) return;
-            
-            try {
-                const trashRef = db.collection('trash').doc(docId);
-                const doc = await trashRef.get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    await db.collection('scores').add({
-                        ...data,
-                        submittedAt: data.submittedAt || firebase.firestore.FieldValue.serverTimestamp() 
-                    });
-                    await trashRef.delete();
-                    alert("Score restaurado com sucesso!");
-                    loadAdminScores('trash', adminTrashBody);
-                    loadAdminScores();
-                }
-            } catch (error) {
-                console.error("Erro ao restaurar score:", error);
-                alert("Erro ao restaurar score.");
-            }
-        }
-        
-        function showAdminTrash() {
-            adminPanel.style.display = 'none';
-            adminTrashPopup.style.display = 'flex';
-            loadAdminScores('trash', adminTrashBody);
-        }
-        
-        function closeAdminTrash() {
-            adminTrashPopup.style.display = 'none';
-            adminPanel.style.display = 'block';
-            loadAdminScores(); 
-        }
-
-        function showAddScorePopup() {
-            adminPanel.style.display = 'none';
-            adminAddScorePopup.style.display = 'flex';
-            addScoreForm.reset();
-        }
-        
-        function closeAddScorePopup() {
-            adminAddScorePopup.style.display = 'none';
-            adminPanel.style.display = 'block';
-        }
-        
-        addScoreForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const nick = document.getElementById('manual-nick').value.trim();
-            const timeStr = document.getElementById('manual-time').value.trim();
-            const dateTimeStr = document.getElementById('manual-datetime').value;
-
-            const timeInSeconds = timeToSeconds(timeStr);
-            const submissionDate = new Date(dateTimeStr);
-            
-            if (nick === '' || timeInSeconds === 0 || isNaN(submissionDate)) {
-                alert("Por favor, preencha todos os campos corretamente. Tempo deve ser MM:SS.");
-                return;
-            }
-
-            try {
-                await db.collection('scores').add({
-                    nick: nick,
-                    timeInSeconds: timeInSeconds,
-                    timeFormatted: timeStr,
-                    recipesCompleted: WIN_COUNT, 
-                    submittedAt: firebase.firestore.Timestamp.fromDate(submissionDate)
-                });
-                alert("Score manual adicionado com sucesso!");
-                closeAddScorePopup();
-                loadAdminScores();
-            } catch (error) {
-                console.error("Erro ao adicionar score manual:", error);
-                alert("Erro ao adicionar score manual.");
+                alert('Nickname ou senha de administrador incorretos.');
             }
         });
         
-        async function viewAdminPodium() {
-            scoreListContainer.style.display = 'none';
-            adminPodiumView.style.display = 'block';
-            
-            adminPodiumSection.innerHTML = '<h3>🏆 Pódio (Top 3) 🏆</h3><p>Carregando...</p>';
-            adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos (Ordem de Tempo) ⏱️</h3><p>Carregando...</p>';
-            
-            try {
-                const podiumSnapshot = await db.collection('scores')
-                                         .orderBy('timeInSeconds', 'asc')
-                                         .get();
-                
-                let allScores = [];
-                podiumSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    allScores.push({
-                        nick: data.nick,
-                        timeFormatted: data.timeFormatted || formatTime(data.timeInSeconds || 0),
-                        timeInSeconds: data.timeInSeconds || 0,
-                        recipesCompleted: data.recipesCompleted || 0
-                    });
-                });
-
-                adminPodiumSection.innerHTML = '<h3>🏆 Pódio (Top 3) 🏆</h3>';
-                adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos (Ordem de Tempo) ⏱️</h3>';
-                
-                if (allScores.length === 0) {
-                    adminPodiumSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
-                    adminAllTimesSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
-                    return;
-                }
-
-                const podiumNames = ['🥇 1º Lugar (Ouro)', '🥈 2º Lugar (Prata)', '🥉 3º Lugar (Bronze)'];
-                const podiumClasses = ['gold', 'silver', 'bronze'];
-
-                for (let i = 0; i < Math.min(3, allScores.length); i++) {
-                    const score = allScores[i];
-                    adminPodiumSection.innerHTML += `
-                        <div class="podium-item ${podiumClasses[i]}">
-                            <strong>${podiumNames[i]}</strong>: ${score.nick}<br>
-                            Tempo de Jogo: ${score.timeFormatted}
-                        </div>
-                    `;
-                }
-
-                allScores.forEach(score => {
-                    adminAllTimesSection.innerHTML += `
-                        <div class="all-times-item">
-                            <div><strong>${score.nick}</strong></div>
-                            <div>${score.timeFormatted} (${score.recipesCompleted} Receitas)</div>
-                        </div>
-                    `;
-                });
-
-            } catch (error) {
-                console.error("Erro ao carregar pódio/histórico do Admin:", error);
-                adminPodiumSection.innerHTML = '<h3>🏆 Pódio</h3><p>Erro ao carregar placar.</p>';
-                adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos</h3><p>Erro ao carregar tempos.</p>';
-            }
-        }
-
-        // --- FUNÇÕES DE CONEXÃO COM FIREBASE ---
-        async function loadPlayerProgress(nick) {
-            try {
-                const docRef = db.collection('jogadores').doc(nick);
-                const doc = await docRef.get();
-
-                if (doc.exists) {
-                    const data = doc.data();
-                    recipesCompleted = data.recipesCompleted || [];
-                    playerStatusMessage.textContent = `Progresso de ${nick} carregado. Receitas feitas: ${recipesCompleted.length}.`;
-                } else {
-                    await docRef.set({
-                        nick: nick,
-                        recipesCompleted: [],
-                        lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    recipesCompleted = [];
-                    playerStatusMessage.textContent = `Novo jogador ${nick} registrado.`;
-                }
-            } catch (error) {
-                console.error("Erro ao carregar/salvar progresso no Firebase:", error);
-                playerStatusMessage.textContent = "Erro de conexão com o Firebase. O progresso não será salvo.";
-            }
-        }
-
-        async function savePlayerProgress(nick) {
-            if (!nick) return;
-            try {
-                await db.collection('jogadores').doc(nick).update({
-                    recipesCompleted: recipesCompleted,
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (error) {
-                console.error("Erro ao salvar progresso no Firebase:", error);
-            }
-        }
+        btnAdminLogout.addEventListener('click', closeAdminPanel);
         
-        function endGame() {
-            loginScreen.style.display = 'none';
-            gameScreen.style.display = 'none';
-            adminPanel.style.display = 'none';
+        /**
+         * Carrega e renderiza todos os scores (ativos + manuais) no Admin Panel.
+         */
+        async function loadAdminScores() {
+            adminScoreBody.innerHTML = '<p>Carregando scores...</p>';
+            const scores = await loadScores();
             
-            resultsScreen.style.display = 'flex'; 
-            resultsScreen.style.flexDirection = 'column';
-            resultsScreen.style.alignItems = 'center';
-            resultsScreen.style.justifyContent = 'center';
-
-            document.getElementById('res-nick').textContent = playerName;
-            document.getElementById('res-recipes').textContent = `${recipesCompleted.length}/${Object.keys(ALL_RECIPES).length}`;
-            document.getElementById('res-time').textContent = formatTime(gameTimeInSeconds);
-            
-            // --- ALTERAÇÃO SOLICITADA: EXIBIR HORA, MINUTO E SEGUNDO ---
-            document.getElementById('res-date').textContent = finishDate.toLocaleDateString('pt-BR') + ' ' + finishDate.toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit' 
+            const activeScores = scores.filter(s => !s.isDeleted).sort((a, b) => {
+                const dateA = a.timestamp ? a.timestamp.toDate().getTime() : 0;
+                const dateB = b.timestamp ? b.timestamp.toDate().getTime() : 0;
+                return dateB - dateA; // Ordena por data (mais recente primeiro)
             });
-            // -------------------------------------------------------------
-            
-            saveResultsButton.disabled = false;
-        }
 
-        async function saveFinalScore() {
-            if (!playerName || gameTimeInSeconds === 0) {
-                alert("Nenhum jogo válido para salvar.");
+            adminScoreBody.innerHTML = '';
+            
+            if (activeScores.length === 0) {
+                adminScoreBody.innerHTML = '<p>Nenhum score ativo encontrado.</p>';
                 return;
             }
+
+            activeScores.forEach(score => {
+                const item = document.createElement('div');
+                item.className = 'admin-score-item';
+                
+                const dateStr = score.finishDate.toLocaleString('pt-BR');
+                const manualTag = score.isManual ? ' <span style="color: yellow; font-weight: bold;">(Manual)</span>' : '';
+
+                item.innerHTML = `
+                    <span>${score.nickname}${manualTag}</span>
+                    <span>${score.formattedTime}</span>
+                    <span>${score.recipes}</span>
+                    <span>${dateStr}</span>
+                    <span>
+                        <button class="btn-delete" data-id="${score.id}">Excluir</button>
+                    </span>
+                `;
+                adminScoreBody.appendChild(item);
+                
+                // Adiciona o listener para o botão de exclusão
+                item.querySelector('.btn-delete').addEventListener('click', () => deleteScore(score.id));
+            });
+        }
+        
+        /**
+         * Move um score para a lixeira (marca como isDeleted: true)
+         */
+        async function deleteScore(scoreId) {
+            if (!confirm("Tem certeza que deseja EXCLUIR este score? Ele será movido para a lixeira.")) return;
+
+            try {
+                await db.collection("scores").doc(scoreId).update({
+                    isDeleted: true,
+                    // ALTERAÇÃO: Adiciona data de exclusão para ordenação na lixeira
+                    deletedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("Score excluído (movido para lixeira) com sucesso!");
+                loadAdminScores(); // Recarrega a lista de scores ativos
+            } catch (error) {
+                console.error("Erro ao excluir score:", error);
+                alert("Erro ao excluir o score.");
+            }
+        }
+
+        // --- LIXEIRA ---
+        
+        btnShowLixeira.addEventListener('click', openAdminTrash);
+
+        function openAdminTrash() {
+            adminPanel.style.display = 'none';
+            adminTrashPopup.style.display = 'flex';
+            loadTrashScores();
+        }
+
+        function closeAdminTrash() {
+            adminTrashPopup.style.display = 'none';
+            adminPanel.style.display = 'flex';
+            loadAdminScores(); // Recarrega o painel principal
+        }
+        
+        /**
+         * Carrega e renderiza scores excluídos (isDeleted: true) na lixeira.
+         */
+        async function loadTrashScores() {
+            adminTrashBody.innerHTML = '<p>Carregando lixeira...</p>';
+            const scores = await loadScores();
             
+            // Filtra e ordena por data de exclusão (deletedAt)
+            const deletedScores = scores.filter(s => s.isDeleted && s.deletedAt).sort((a, b) => {
+                const dateA = a.deletedAt ? a.deletedAt.toDate().getTime() : 0;
+                const dateB = b.deletedAt ? b.deletedAt.toDate().getTime() : 0;
+                return dateB - dateA; // Mais recentemente excluído primeiro
+            });
+
+            adminTrashBody.innerHTML = '';
+            
+            if (deletedScores.length === 0) {
+                adminTrashBody.innerHTML = '<p>Nenhum score na lixeira.</p>';
+                return;
+            }
+
+            deletedScores.forEach(score => {
+                const item = document.createElement('div');
+                item.className = 'admin-score-item';
+                
+                // Formata a data de exclusão
+                const deletedDate = score.deletedAt ? score.deletedAt.toDate().toLocaleString('pt-BR') : 'Data Indisponível';
+                const manualTag = score.isManual ? ' <span style="color: yellow; font-weight: bold;">(Manual)</span>' : '';
+
+
+                item.innerHTML = `
+                    <span>${score.nickname}${manualTag}</span>
+                    <span>${score.formattedTime}</span>
+                    <span>${score.recipes}</span>
+                    <span>${deletedDate}</span>
+                    <span>
+                        <button class="btn-restore" data-id="${score.id}">Restaurar</button>
+                    </span>
+                `;
+                adminTrashBody.appendChild(item);
+                
+                // Adiciona o listener para o botão de restauração
+                item.querySelector('.btn-restore').addEventListener('click', () => restoreScore(score.id));
+            });
+        }
+        
+        /**
+         * Restaura um score da lixeira (marca como isDeleted: false)
+         */
+        async function restoreScore(scoreId) {
+            if (!confirm("Tem certeza que deseja RESTAURAR este score?")) return;
+
+            try {
+                await db.collection("scores").doc(scoreId).update({
+                    isDeleted: false,
+                    deletedAt: firebase.firestore.FieldValue.delete() // Remove o campo de data de exclusão
+                });
+                alert("Score restaurado com sucesso!");
+                loadTrashScores(); // Recarrega a lixeira
+            } catch (error) {
+                console.error("Erro ao restaurar score:", error);
+                alert("Erro ao restaurar o score.");
+            }
+        }
+        
+        // --- ADICIONAR MANUALMENTE ---
+        
+        btnAddUser.addEventListener('click', openAddScorePopup);
+        
+        function openAddScorePopup() {
+            adminPanel.style.display = 'none';
+            adminAddScorePopup.style.display = 'flex';
+        }
+
+        function closeAddScorePopup() {
+            adminAddScorePopup.style.display = 'none';
+            adminPanel.style.display = 'flex';
+        }
+
+        // ALTERAÇÃO: Adicionado o campo `recipes`
+        addScoreForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nick = document.getElementById('manual-nick').value.trim();
+            const timeStr = document.getElementById('manual-time').value.trim();
+            const recipes = parseInt(manualRecipesInput.value, 10);
+            const dateTimeStr = document.getElementById('manual-datetime').value;
+            
+            if (!nick || !timeStr || !dateTimeStr || isNaN(recipes)) {
+                alert('Preencha todos os campos corretamente.');
+                return;
+            }
+
+            const timeInSeconds = timeToSeconds(timeStr);
+            const finishTime = new Date(dateTimeStr);
+            
+            const success = await saveScoreToFirestore(nick, timeInSeconds, recipes, finishTime, true);
+
+            if (success) {
+                alert(`Score Manual para ${nick} (${timeStr}) adicionado com sucesso!`);
+                addScoreForm.reset();
+                closeAddScorePopup();
+            }
+        });
+        
+        // --- VISUALIZAR PÓDIO/HISTÓRICO NO ADMIN ---
+        
+        btnViewPodium.addEventListener('click', openAdminPodiumView);
+
+        async function openAdminPodiumView() {
+            adminPanel.style.display = 'flex';
+            scoreListContainer.style.display = 'none';
+            adminPodiumView.style.display = 'block';
+
+            adminPodiumSection.innerHTML = '<h3>🏆 Pódio (Top 3) 🏆</h3>';
+            adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos (Ordem de Tempo) ⏱️</h3>';
+            
+            const scores = await loadScores();
+            const activeScores = scores.filter(s => s.recipes >= WIN_COUNT && !s.isDeleted);
+            
+            // Ordena ativos: 1º por tempo, 2º por data de envio (mais novo primeiro)
+            const sortedActiveScores = activeScores.sort((a, b) => {
+                if (a.time !== b.time) {
+                    return a.time - b.time; // Tempo ascendente
+                }
+                const dateA = a.timestamp ? a.timestamp.toDate().getTime() : Infinity;
+                const dateB = b.timestamp ? b.timestamp.toDate().getTime() : Infinity;
+                return dateB - dateA; 
+            });
+            
+            // Renderiza o Pódio
+            sortedActiveScores.slice(0, 3).forEach((score, index) => {
+                const item = document.createElement('div');
+                let className = 'podium-item';
+                if (index === 0) className += ' gold';
+                else if (index === 1) className += ' silver';
+                else if (index === 2) className += ' bronze';
+
+                item.className = className;
+                const manualTag = score.isManual ? ' <span style="font-size: 0.8em; color: black; background-color: yellow; padding: 1px 4px; border-radius: 3px;">Manual</span>' : '';
+                item.innerHTML = `
+                    #${index + 1} - <strong>${score.nickname}</strong>${manualTag} (${score.formattedTime})
+                    <span style="font-size: 0.8em; display: block;">(${score.recipes} Receitas)</span>
+                `;
+                adminPodiumSection.appendChild(item);
+            });
+            
+            // Renderiza a lista de todos os tempos
+            sortedActiveScores.forEach((score) => {
+                const item = document.createElement('div');
+                item.className = 'all-times-item';
+                const manualTag = score.isManual ? ' (M)' : '';
+                item.innerHTML = `
+                    <span>${score.nickname}${manualTag} (${score.recipes})</span>
+                    <span>${score.formattedTime}</span>
+                `;
+                adminAllTimesSection.appendChild(item);
+            });
+
+             if (sortedActiveScores.length === 0) {
+                 adminAllTimesSection.innerHTML += '<p>Nenhum score ativo para pódio.</p>';
+                 adminPodiumSection.innerHTML += '<p>Nenhum score ativo para pódio.</p>';
+            }
+        }
+
+        function closeAdminPodium() {
+            adminPodiumView.style.display = 'none';
+            scoreListContainer.style.display = 'block';
+            loadAdminScores(); // Volta para a visualização principal do histórico
+        }
+
+
+        // --- LISTENERS INICIAIS ---
+
+        // Ativa o botão de começar quando o nickname é preenchido
+        nicknameInput.addEventListener('input', () => {
+            const nickname = nicknameInput.value.trim();
+            startGameButton.disabled = nickname.length < 3 || nickname.length > 15;
+            playerStatusMessage.textContent = '';
+        });
+
+        startGameButton.addEventListener('click', startGame);
+        checkRecipeButton.addEventListener('click', checkRecipe);
+        clearPotButton.addEventListener('click', () => clearPot(true));
+        saveResultsButton.addEventListener('click', async () => {
             saveResultsButton.disabled = true;
             saveResultsButton.textContent = "Salvando...";
+            
+            const success = await saveScoreToFirestore(playerName, gameTimeInSeconds, recipesCompleted.length, finishDate, false);
+            
+            saveResultsButton.textContent = "Resultado Salvo!";
+            // Recarrega para mostrar o novo score no placar
+            loadScoresAndDisplay(); 
+        });
 
-            const scoreData = {
-                nick: playerName,
-                timeInSeconds: gameTimeInSeconds,
-                timeFormatted: formatTime(gameTimeInSeconds),
-                recipesCompleted: recipesCompleted.length,
-                submittedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
 
-            try {
-                await db.collection('scores').add(scoreData);
-                alert("Resultado salvo com sucesso! Carregando pódio...");
-                await loadScoreboard();
-                saveResultsButton.textContent = "Resultado Salvo!";
-            } catch (error) {
-                console.error("Erro ao salvar o score final:", error);
-                alert("Erro ao salvar o resultado. Tente novamente.");
-                saveResultsButton.disabled = false;
-                saveResultsButton.textContent = "Salvar Resultado e Ver Pódio";
-            }
-        }
+        // DRAG AND DROP: Inicializa listeners
+        // Não precisamos redefinir o dropzone, apenas os ingredientes (que são criados dinamicamente)
         
-        async function loadScoreboard() {
-            podiumSection.innerHTML = '<h3>🏆 Pódio (Envios Mais Rápidos) 🏆</h3><p>Carregando...</p>';
-            allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos ⏱️</h3><p>Carregando...</p>';
-            
-            try {
-                const snapshot = await db.collection('scores')
-                                         .orderBy('timeInSeconds', 'asc')
-                                         .get();
-                
-                let allScores = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const date = data.submittedAt ? data.submittedAt.toDate() : new Date();
-                    
-                    // --- ALTERAÇÃO SOLICITADA: FORMATAR DATA E HORA COM SEGUNDOS ---
-                    const formattedDateTime = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
-                    // ----------------------------------------------------------------
+        // --- INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', () => {
+             // Opcional: Carregar scores na tela inicial para exibir o pódio
+             // loadScoresAndDisplay(); 
 
-                    allScores.push({
-                        nick: data.nick,
-                        timeFormatted: data.timeFormatted || formatTime(data.timeInSeconds || 0),
-                        submittedAt: formattedDateTime,
-                        timeInSeconds: data.timeInSeconds
-                    });
-                });
+            // Listener para tentar acessar o painel de administração clicando no H1 da tela de login
+            document.querySelector('#login-screen h1').addEventListener('dblclick', showAdminLogin);
+        });
 
-                podiumSection.innerHTML = '<h3>🏆 Pódio (Envios Mais Rápidos) 🏆</h3>';
-                if (allScores.length === 0) {
-                    podiumSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
-                } else {
-                    for (let i = 0; i < Math.min(3, allScores.length); i++) {
-                        const score = allScores[i];
-                        podiumSection.innerHTML += `
-                            <div class="podium-item ${['gold', 'silver', 'bronze'][i]}">
-                                <strong>${['🥇 1º Lugar (Ouro)', '🥈 2º Lugar (Prata)', '🥉 3º Lugar (Bronze)'][i]}</strong>: ${score.nick}<br>
-                                Tempo de Jogo: ${score.timeFormatted}
-                            </div>
-                        `;
-                    }
-                }
-
-                allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos (Melhores Tempos) ⏱️</h3>';
-                if (allScores.length === 0) {
-                    allTimesSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
-                } else {
-                    allScores.forEach(score => {
-                        allTimesSection.innerHTML += `
-                            <div class="all-times-item">
-                                <div><strong>${score.nick}</strong></div>
-                                <div>${score.timeFormatted}</div>
-                                <div style="font-size: 0.8em; color: #bbb;">${score.submittedAt}</div>
-                            </div>
-                        `;
-                    });
-                }
-
-
-            } catch (error) {
-                console.error("Erro ao carregar o placar do Firebase:", error);
-                podiumSection.innerHTML = '<h3>🏆 Pódio</h3><p>Erro ao carregar o placar.</p>';
-                allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos</h3><p>Erro ao carregar os tempos.</p>';
-            }
-        }
-
-        // --- INICIALIZAÇÃO E LISTENERS ---
-
-        function initializeIngredients() {
-            ingredientsArea.innerHTML = '';
-            const shuffledNames = shuffleArray([...ALL_INGREDIENT_NAMES]); 
-            
-            shuffledNames.forEach(name => {
-                const url = ALL_INGREDIENTS_DATA[name];
-                
-                const div = document.createElement('div');
-                div.className = 'ingredient';
-                div.setAttribute('draggable', true);
-                div.setAttribute('data-name', name);
-                div.setAttribute('title', name);
-
-                const img = document.createElement('img');
-                img.src = url;
-                img.alt = name;
-                
-                div.appendChild(img);
-                
-                div.addEventListener('dragstart', dragStart);
-                div.addEventListener('dragend', dragEnd);
-                ingredientsArea.appendChild(div);
-            });
-        }
-
-        function attachListeners() {
-            nicknameInput.addEventListener('input', () => {
-                startGameButton.disabled = nicknameInput.value.trim().length === 0;
-            });
-            
-            startGameButton.addEventListener('click', async () => {
-                playerName = nicknameInput.value.trim();
-
-                if (playerName === ADMIN_NICK) {
-                    showAdminLogin();
-                    return;
-                }
-
-                if (playerName) {
-                    await loadPlayerProgress(playerName);
-                    
-                    await initializeAudio(); 
-
-                    loginScreen.style.display = 'none';
-                    gameScreen.style.display = 'flex';
-                    resultsScreen.style.display = 'none';
-                    
-                    statusText.textContent = `Olá, Chef ${playerName}! Faça ${WIN_COUNT} receitas!`;
-                    initializeGame();
-                }
-            });
-            
-            // Listeners do Admin Login
-            adminLoginButton.addEventListener('click', loginAdmin);
-            adminPasswordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') loginAdmin();
-            });
-
-            // Listeners do Painel Admin
-            btnShowLixeira.addEventListener('click', showAdminTrash);
-            btnAddUser.addEventListener('click', showAddScorePopup);
-            btnViewPodium.addEventListener('click', viewAdminPodium);
-            btnAdminLogout.addEventListener('click', adminLogout);
-            
-            // Listeners de Jogo
-            potDropzone.addEventListener('dragover', dragOver);
-            potDropzone.addEventListener('dragenter', dragEnter);
-            potDropzone.addEventListener('dragleave', dragLeave);
-            potDropzone.addEventListener('drop', drop);
-
-            checkRecipeButton.addEventListener('click', checkRecipe);
-            clearPotButton.addEventListener('click', () => {
-                ingredientsInPot = [];
-                updatePotDisplay();
-                statusText.textContent = 'Panela limpa. Comece uma nova receita!';
-            });
-            
-            saveResultsButton.addEventListener('click', saveFinalScore);
-        }
-
-        function initializeGame() {
-            ingredientsInPot = [];
-            recipesCompleted = [];
-            gameWon = false;
-            
-            initializeIngredients();
-            updateGameDisplay();
-            updatePotDisplay();
-            startTimer();
-        }
-        
-        // --- DRAG-AND-DROP HANDLERS ---
-        function dragStart(e) {
-            e.dataTransfer.setData('text/plain', e.target.closest('.ingredient').getAttribute('data-name'));
-            e.target.closest('.ingredient').style.opacity = '0.5';
-        }
-
-        function dragEnd(e) {
-            e.target.closest('.ingredient').style.opacity = '1';
-        }
-
-        function dragOver(e) { e.preventDefault(); }
-
-        function dragEnter(e) {
-            if (e.target.closest('#pot-dropzone')) {
-                potDropzone.classList.add('highlight');
-            }
-        }
-
-        function dragLeave(e) {
-            if (e.target.closest('#pot-dropzone')) {
-                potDropzone.classList.remove('highlight');
-            }
-        }
-
-        function drop(e) {
-            e.preventDefault();
-            potDropzone.classList.remove('highlight');
-            const ingredientName = e.dataTransfer.getData('text/plain');
-            addIngredientToPot(ingredientName);
-        }
-
-        attachListeners(); 
     </script>
 </body>
 </html>
