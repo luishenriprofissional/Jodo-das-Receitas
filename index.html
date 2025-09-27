@@ -947,7 +947,7 @@
             recipeCounter.textContent = `Receitas Completas: ${recipesCompleted.length}/${WIN_COUNT}`;
         }
         
-        // --- MITIGAÇÃO DE CAPTURA DE TELA (NOVO) ---
+        // --- MITIGAÇÃO DE CAPTURA DE TELA (MANTIDA) ---
 
         function attemptScreenBlock(e) {
             const memorizationScreen = document.getElementById('memorization-screen');
@@ -1516,10 +1516,11 @@
             }
         }
         
+        // --- FUNÇÃO ENDGAME CORRIGIDA ---
         function endGame() {
             loginScreen.style.display = 'none';
             gameScreen.style.display = 'none';
-            memorizationScreen.style.display = 'none'; // GARANTE QUE ESTEJA ESCONDIDA
+            memorizationScreen.style.display = 'none'; 
             adminPanel.style.display = 'none';
             
             resultsScreen.style.display = 'flex'; 
@@ -1535,10 +1536,14 @@
                 <p>⚠️ Seu score finalizado será salvo no placar principal.</p>
             `;
             
-            saveResultsButton.style.display = 'block';
-            backToLoginButton.style.display = 'none'; // Esconde enquanto salva
-            saveResultsButton.disabled = false;
+            // CORREÇÃO: Garante que o botão Salvar Resultado esteja visível, com o texto correto e habilitado
+            saveResultsButton.style.display = 'block'; 
+            saveResultsButton.textContent = "Salvar Resultado e Ver Pódio"; 
+            saveResultsButton.disabled = false; 
+            
+            backToLoginButton.style.display = 'none'; // Esconde o "Voltar" enquanto o "Salvar" está ativo
         }
+        // --- FIM DA FUNÇÃO ENDGAME CORRIGIDA ---
 
         async function saveFinalScore() {
             if (!playerName || gameTimeInSeconds === 0) {
@@ -1566,6 +1571,7 @@
                 alert("Resultado salvo com sucesso! Você não poderá jogar novamente.");
                 await loadScoreboard();
                 
+                // AQUI, O BOTÃO É ESCONDIDO APÓS O SUCESSO DO ENVIO
                 saveResultsButton.style.display = 'none';
                 saveResultsButton.textContent = "Resultado Salvo!";
                 backToLoginButton.style.display = 'block'; // Mostra botão de voltar
