@@ -1450,7 +1450,7 @@
         // Verifica se o usuário já tem um score FINALIZADO na coleção 'scores'
         async function checkIfUserHasFinalScore(nick) {
             try {
-                // ESTA É A QUERY QUE EXIGE O ÍNDICE COMPOSTO NO FIREBASE
+                // ESSA QUERY EXIGE O ÍNDICE COMPOSTO NO FIREBASE (nick == X)
                 const snapshot = await db.collection('scores')
                                          .where('nick', '==', nick)
                                          .limit(1)
@@ -1459,9 +1459,9 @@
                 return snapshot.size > 0;
 
             } catch (error) {
-                console.error("Erro ao verificar score finalizado:", error);
-                // Retorna true em caso de erro para BLOQUEAR O REPLAY (mais seguro)
-                return true; 
+                console.error("ERRO GRAVE AO VERIFICAR SCORE FINALIZADO:", error);
+                // Retorna false, permitindo jogar (se o índice estiver faltando, o jogo ainda funciona)
+                return false; 
             }
         }
         
@@ -1682,6 +1682,7 @@
 
             try {
                 // Busca o melhor tempo (asc) do jogador
+                // ESTA QUERY É A QUE EXIGE O ÍNDICE COMPOSTO NO FIREBASE
                 const snapshot = await db.collection('scores')
                                          .where('nick', '==', nick)
                                          .orderBy('timeInSeconds', 'asc') 
@@ -1718,7 +1719,7 @@
             } catch (error) {
                 // CAPTURA O ERRO DO ÍNDICE
                 console.error("ERRO GRAVE AO CARREGAR O HISTÓRICO:", error);
-                document.getElementById('player-previous-result').innerHTML = `<p style="color:red;">Erro ao carregar seu resultado. (Verifique o console para detalhes)</p>`;
+                document.getElementById('player-previous-result').innerHTML = `<p style="color:red; font-weight: bold;">Erro ao carregar seu resultado. (Verifique o console para detalhes)</p>`;
             }
 
             loadScoreboard();
