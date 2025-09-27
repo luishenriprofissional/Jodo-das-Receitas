@@ -19,17 +19,12 @@
         }
 
         #app-container {
-            /* Mudei o tamanho máximo para acomodar o fundo da cozinha */
             width: 100%;
             height: 100vh;
             box-sizing: border-box;
-            
-            /* Removemos o fundo branco aqui para que a cozinha apareça */
             background-color: transparent; 
             border: none; 
             box-shadow: none;
-            
-            /* Centraliza o conteúdo (login/jogo) */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -45,27 +40,26 @@
             top: 0;
             left: 0;
             
-            /* --- INÍCIO: FUNDO DE COZINHA GIF --- */
+            /* Fundo da Cozinha GIF (Garantindo que preencha a tela) */
             background-image: url('https://i.imgur.com/qKjBc1w.gif');
-            background-size: 100% 100%; /* Faz a imagem preencher completamente a tela */
+            background-size: 100% 100%; /* Corrigido: Estica para preencher toda a área */
             background-repeat: no-repeat;
             background-position: center;
-            /* FIM: FUNDO DE COZINHA GIF */
             
             color: white;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-            padding: 0; /* Remove padding para usar a tela inteira */
+            padding: 0; 
         }
         
-        /* O conteúdo do jogo (textos, botões, etc.) será centralizado dentro do #game-screen */
+        /* O conteúdo do jogo (textos, botões, etc.) */
         #game-content {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80%; /* Ajuste o tamanho da área de conteúdo */
+            width: 80%;
             max-width: 900px;
-            background-color: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente para legibilidade */
+            background-color: rgba(0, 0, 0, 0.7);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
@@ -77,7 +71,7 @@
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            position: relative; /* Para ficar acima do fundo */
+            position: relative;
         }
 
         #login-screen h1 { color: #4CAF50; }
@@ -92,11 +86,10 @@
             justify-content: center;
             margin: 20px 0;
             position: relative;
-            height: 250px; /* Altura para posicionar a panela */
+            height: 250px;
         }
         
         #pot-dropzone {
-            /* A panela é o background e a área de drop */
             position: absolute;
             top: 10px; 
             width: 250px; 
@@ -115,40 +108,50 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* Alinha ingredientes na parte de cima da panela */
-            padding-top: 50px; /* Espaço para a "boca" da panela */
+            /* Alterado para que o conteúdo (ingredientes) fique no fundo */
+            justify-content: flex-end; 
+        }
+
+        /* Corrigido: Aumenta a margem superior para subir a frase */
+        #pot-dropzone p {
+            margin-top: -15px; /* Subindo a frase SOLTE OS INGREDIENTES AQUI */
+            font-size: 14px;
+            position: absolute;
+            top: 10px;
         }
 
         #current-ingredients {
-            min-height: 100px;
-            width: 80%;
+            /* Posição para ficar no 'fundo' da panela */
+            height: 70px; /* Altura da área visível de ingredientes */
+            width: 150px; /* Largura da boca da panela */
             padding: 5px;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            align-items: flex-end; /* Alinha os itens no fundo */
             gap: 5px;
-            background-color: rgba(0, 0, 0, 0.4); /* Fundo escuro para os ingredientes dentro da panela */
+            background-color: rgba(0, 0, 0, 0.4); 
             border-radius: 5px;
             box-sizing: border-box;
-            position: relative;
+            margin-bottom: 25px; /* Empurra para o fundo da imagem da panela */
         }
         
         .ingredient-in-pot {
-            background-color: #ff9800;
-            color: white;
-            padding: 4px 6px;
-            border-radius: 3px;
-            font-size: 12px;
-            /* Animação de queda */
+            /* Agora exibe a imagem reduzida do ingrediente */
+            width: 30px; 
+            height: 30px;
             animation: drop-in 0.5s ease-out;
+            border-radius: 50%;
+            object-fit: cover;
+            opacity: 0.9;
         }
 
         @keyframes drop-in {
-            0% { transform: translateY(-50px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+            0% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 0.9; }
         }
 
-        /* --- ÁREA DE INGREDIENTES (AGORA IMAGENS) --- */
+        /* --- ÁREA DE INGREDIENTES (IMAGENS) --- */
         #ingredients-area {
             display: flex;
             flex-wrap: wrap;
@@ -164,7 +167,7 @@
 
         .ingredient {
             cursor: grab;
-            width: 60px; /* Tamanho fixo para a imagem */
+            width: 60px;
             height: 60px;
             display: flex;
             justify-content: center;
@@ -175,19 +178,12 @@
             transition: border-color 0.2s;
         }
         
-        .ingredient:hover {
-            border-color: #4CAF50; /* Destaca ao passar o mouse */
-        }
+        .ingredient:hover { border-color: #4CAF50; }
 
-        .ingredient img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+        .ingredient img { width: 100%; height: 100%; object-fit: contain; }
         
-        /* O nome aparecerá ao passar o mouse (usando atributo title) */
         .ingredient::before {
-            content: attr(data-name); /* Usa o nome do ingrediente */
+            content: attr(data-name);
             position: absolute;
             bottom: -20px;
             left: 50%;
@@ -200,11 +196,10 @@
             white-space: nowrap;
             opacity: 0;
             transition: opacity 0.2s;
+            pointer-events: none; /* Garante que o tooltip não atrapalhe o mouse */
         }
         
-        .ingredient:hover::before {
-            opacity: 1; /* Mostra o nome ao passar o mouse */
-        }
+        .ingredient:hover::before { opacity: 1; }
         
         /* --- FEEDBACK VISUAL (POPUP DE RECEITA PRONTA) --- */
         #recipe-popup {
@@ -219,7 +214,7 @@
             align-items: center;
             flex-direction: column;
             z-index: 1000;
-            animation: fade-out 0.5s 4.5s forwards; /* Começa a desaparecer em 4.5s */
+            animation: fade-out 0.5s 4.5s forwards;
             opacity: 1;
         }
         
@@ -231,11 +226,7 @@
             animation: zoom-in 0.5s ease-out;
         }
         
-        #recipe-popup h2 {
-            color: gold;
-            margin-top: 20px;
-            font-size: 2em;
-        }
+        #recipe-popup h2 { color: gold; margin-top: 20px; font-size: 2em; }
         
         @keyframes zoom-in {
             0% { transform: scale(0.5); opacity: 0; }
@@ -293,7 +284,7 @@
     <audio id="plin-sound" src="plin.mp3" preload="auto"></audio>
 
     <script>
-        // Substitua APENAS estes dados pela sua configuração do Firebase da imagem
+        // Use a configuração da imagem enviada para o Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyD0f60PyH7r2b13Py4DbDixudkb1GJam5BA",
             authDomain: "jogoreceitas-3a179.firebaseapp.com",
@@ -340,7 +331,7 @@
             'Arroz': 'https://i.imgur.com/Sk3hkFu.png',
             'Feijão': 'https://i.imgur.com/lwrbsUQ.png',
             'Almôndegas': 'https://i.imgur.com/blGMtBW.png',
-            'Hambúrguer': 'https://i.imgur.com/HYzjOL5.png' // Novo Ingrediente
+            'Hambúrguer': 'https://i.imgur.com/HYzjOL5.png'
         };
 
         // --- VARIÁVEIS DE ESTADO ---
@@ -441,17 +432,14 @@
             if (foundRecipeId) {
                 recipesCompleted.push(foundRecipeId);
                 
-                // Exibe o popup da comida feita
                 showRecipePopup(foundRecipeData.name, foundRecipeData.image);
 
-                // Limpa a panela e reseta o estado local
+                // Limpa a panela
                 ingredientsInPot = [];
                 updatePotDisplay();
 
-                // Lógica de Persistência no Firebase
                 await saveProgressToFirebase();
                 
-                // Lógica de Vitória
                 updateGameDisplay();
                 if (recipesCompleted.length >= WIN_COUNT) {
                     gameWon = true;
@@ -475,17 +463,16 @@
             `;
             recipePopup.style.display = 'flex';
             
-            // Remove o popup após 5 segundos
+            // Reset de animação para o próximo uso
+            recipePopup.style.opacity = 1;
+            recipePopup.style.animation = 'none'; 
+            setTimeout(() => {
+                recipePopup.style.animation = 'fade-out 0.5s 4.5s forwards';
+            }, 10);
+            
+            // Esconde o popup após 5 segundos
             setTimeout(() => {
                 recipePopup.style.display = 'none';
-                // Reset a animação para a próxima vez
-                recipePopup.style.opacity = 1;
-                recipePopup.style.animation = 'none';
-                setTimeout(() => {
-                    recipePopup.style.animation = 'fade-out 0.5s 4.5s forwards';
-                }, 10); // Pequeno timeout para resetar a animação
-                
-                // Atualiza o status do jogo após o popup
                 statusText.textContent = `Você fez um(a) ${name}! Próxima receita...`;
             }, 5000); 
         }
@@ -505,6 +492,9 @@
         function addIngredientToPot(ingredientName) {
             if (gameWon) return;
             
+            // Checagem se o ingrediente já está na panela. 
+            // Para permitir múltiplos do mesmo, você precisaria de uma lógica mais complexa (como um contador)
+            // Mantendo a regra atual de 'apenas um de cada'.
             if (ingredientsInPot.includes(ingredientName)) {
                 statusText.textContent = `${ingredientName} já está na panela!`;
                 return;
@@ -517,13 +507,16 @@
             statusText.textContent = `${ingredientName} adicionado.`;
         }
 
+        /* CORRIGIDO: Agora exibe as imagens dos ingredientes dentro da panela */
         function updatePotDisplay() {
             currentIngredientsDiv.innerHTML = '';
-            ingredientsInPot.forEach(ing => {
-                const span = document.createElement('span');
-                span.textContent = ing;
-                span.className = 'ingredient-in-pot';
-                currentIngredientsDiv.appendChild(span);
+            ingredientsInPot.forEach(ingName => {
+                const img = document.createElement('img');
+                img.src = ALL_INGREDIENTS_DATA[ingName]; // Usa a URL da imagem
+                img.alt = ingName;
+                img.className = 'ingredient-in-pot';
+                img.setAttribute('title', ingName); // Adiciona um tooltip ao passar o mouse
+                currentIngredientsDiv.appendChild(img);
             });
             checkRecipeButton.disabled = ingredientsInPot.length === 0;
         }
@@ -541,13 +534,12 @@
         // --- LÓGICA DO DRAG-AND-DROP ---
 
         function dragStart(e) {
-            // Usa o atributo data-name para transferir o nome
-            e.dataTransfer.setData('text/plain', e.target.getAttribute('data-name'));
-            e.target.style.opacity = '0.5';
+            e.dataTransfer.setData('text/plain', e.target.closest('.ingredient').getAttribute('data-name'));
+            e.target.closest('.ingredient').style.opacity = '0.5';
         }
 
         function dragEnd(e) {
-            e.target.style.opacity = '1';
+            e.target.closest('.ingredient').style.opacity = '1';
         }
 
         function dragOver(e) {
@@ -575,7 +567,7 @@
             addIngredientToPot(ingredientName);
         }
 
-        // --- INICIALIZAÇÃO DO JOGO (COM IMAGENS) ---
+        // --- INICIALIZAÇÃO DO JOGO ---
 
         function initializeIngredients() {
             ingredientsArea.innerHTML = '';
@@ -585,12 +577,12 @@
                 const div = document.createElement('div');
                 div.className = 'ingredient';
                 div.setAttribute('draggable', true);
-                div.setAttribute('data-name', name); // Armazena o nome
-                div.setAttribute('title', name); // Tooltip nativo (além do CSS hover)
+                div.setAttribute('data-name', name);
+                div.setAttribute('title', name);
 
                 const img = document.createElement('img');
                 img.src = url;
-                img.alt = name; // Alt é usado para acessibilidade e fallback
+                img.alt = name;
                 
                 div.appendChild(img);
                 
