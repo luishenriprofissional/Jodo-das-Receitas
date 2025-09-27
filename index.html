@@ -4,10 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Atividade do Restaurante: Jogo das Receitas</title>
+    
+    <link rel="icon" type="image/png" href="https://i.imgur.com/kK3k4kx.png">
+    
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-firestore-compat.js"></script> 
     
     <style>
+        /* MANTIDO: Todos os estilos CSS (incluindo o cronômetro, pódio, panela e imagens grandes) */
+        
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -40,12 +45,11 @@
             top: 0;
             left: 0;
             
-            /* Melhor configuração para o fundo da cozinha */
             background-image: url('https://i.imgur.com/qKjBc1w.gif');
-            background-size: cover; /* Faz a imagem cobrir a tela sem esticar */
+            background-size: cover; 
             background-repeat: no-repeat;
             background-position: center;
-            background-attachment: fixed; /* Fixa o fundo */
+            background-attachment: fixed;
             
             color: white;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
@@ -59,7 +63,7 @@
             transform: translate(-50%, -50%);
             width: 80%;
             max-width: 900px;
-            background-color: rgba(0, 0, 0, 0.8); /* Fundo um pouco mais escuro para o conteúdo */
+            background-color: rgba(0, 0, 0, 0.8); 
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
@@ -159,8 +163,8 @@
 
         .ingredient {
             cursor: grab;
-            width: 80px; /* Aumentado de 60px */
-            height: 80px; /* Aumentado de 60px */
+            width: 80px;
+            height: 80px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -430,12 +434,9 @@
         let gameWon = false;
         const WIN_COUNT = 3;
         
-        // Variáveis do Cronômetro
         let startTime = null;
         let gameTimeInSeconds = 0;
         let timerInterval = null;
-        
-        // Variáveis de Resultado Final
         let finishDate = null;
 
         // --- ELEMENTOS DO DOM ---
@@ -502,11 +503,14 @@
             currentIngredientsDiv.innerHTML = '';
             ingredientsInPot.forEach(ingName => {
                 const img = document.createElement('img');
-                img.src = ALL_INGREDIENTS_DATA[ingName];
-                img.alt = ingName;
-                img.className = 'ingredient-in-pot';
-                img.setAttribute('title', ingName);
-                currentIngredientsDiv.appendChild(img);
+                // Garante que o ingrediente tenha uma URL no ALL_INGREDIENTS_DATA
+                if (ALL_INGREDIENTS_DATA[ingName]) {
+                    img.src = ALL_INGREDIENTS_DATA[ingName];
+                    img.alt = ingName;
+                    img.className = 'ingredient-in-pot';
+                    img.setAttribute('title', ingName);
+                    currentIngredientsDiv.appendChild(img);
+                }
             });
             checkRecipeButton.disabled = ingredientsInPot.length === 0;
         }
@@ -549,8 +553,8 @@
                 if (recipesCompleted.length >= WIN_COUNT) {
                     gameWon = true;
                     stopTimer();
-                    finishDate = new Date(); // Registra a data/hora final
-                    endGame(); // Chama a tela final
+                    finishDate = new Date();
+                    endGame();
                 }
 
             } else {
@@ -561,9 +565,15 @@
         function addIngredientToPot(ingredientName) {
             if (gameWon) return;
             
-            // Permite apenas um de cada ingrediente
             if (ingredientsInPot.includes(ingredientName)) {
                 statusText.textContent = `${ingredientName} já está na panela!`;
+                return;
+            }
+
+            // CORREÇÃO: Verifica se o ingrediente existe antes de adicionar
+            if (!ALL_INGREDIENTS_DATA[ingredientName]) {
+                console.error("Ingrediente inválido tentou ser adicionado:", ingredientName);
+                statusText.textContent = `Erro: Ingrediente desconhecido "${ingredientName}"`;
                 return;
             }
 
@@ -574,6 +584,29 @@
             statusText.textContent = `${ingredientName} adicionado.`;
         }
         
+        function showRecipePopup(name, imageUrl) {
+            // Garante o som de "plin" a cada receita feita
+            plinSound.currentTime = 0;
+            plinSound.play();
+            
+            recipePopup.innerHTML = `
+                <h2>Receita Pronta: ${name}!</h2>
+                <img src="${imageUrl}" alt="${name}">
+            `;
+            recipePopup.style.display = 'flex';
+            
+            recipePopup.style.opacity = 1;
+            recipePopup.style.animation = 'none'; 
+            setTimeout(() => {
+                recipePopup.style.animation = 'fade-out 0.5s 4.5s forwards';
+            }, 10);
+            
+            setTimeout(() => {
+                recipePopup.style.display = 'none';
+                statusText.textContent = `Você fez um(a) ${name}! Próxima receita...`;
+            }, 5000); 
+        }
+
         // --- FUNÇÕES DE CONEXÃO COM FIREBASE ---
 
         async function loadPlayerProgress(nick) {
@@ -618,11 +651,11 @@
             gameScreen.style.display = 'none';
             resultsScreen.style.display = 'block';
 
-            // Popula os resultados do jogador
             document.getElementById('res-nick').textContent = playerName;
             document.getElementById('res-recipes').textContent = `${recipesCompleted.length}/${Object.keys(ALL_RECIPES).length}`;
             document.getElementById('res-time').textContent = formatTime(gameTimeInSeconds);
             document.getElementById('res-date').textContent = finishDate.toLocaleString();
+            saveResultsButton.disabled = false;
         }
 
         async function saveFinalScore() {
@@ -639,11 +672,10 @@
                 timeInSeconds: gameTimeInSeconds,
                 timeFormatted: formatTime(gameTimeInSeconds),
                 recipesCompleted: recipesCompleted.length,
-                submittedAt: firebase.firestore.FieldValue.serverTimestamp() // Critério principal
+                submittedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
             try {
-                // Salva o resultado final em uma nova coleção 'scores'
                 await db.collection('scores').add(scoreData);
                 alert("Resultado salvo com sucesso! Carregando pódio...");
                 await loadScoreboard();
@@ -661,16 +693,15 @@
             allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos ⏱️</h3><p>Carregando...</p>';
             
             try {
-                // 1. Coleta todos os resultados, ordenando primeiro por tempo de envio, e depois por tempo de jogo
+                // 1. Coleta todos os resultados, ordenando por tempo de envio e tempo de jogo
                 const snapshot = await db.collection('scores')
-                                         .orderBy('submittedAt', 'asc') // 1º Critério: Quem enviou primeiro
-                                         .orderBy('timeInSeconds', 'asc') // 2º Critério: Desempate pelo menor tempo de jogo
+                                         .orderBy('submittedAt', 'asc')
+                                         .orderBy('timeInSeconds', 'asc')
                                          .get();
                 
                 let allScores = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    // Converte o Timestamp do Firebase para objeto Date local
                     const date = data.submittedAt ? data.submittedAt.toDate() : new Date();
                     allScores.push({
                         nick: data.nick,
@@ -727,7 +758,6 @@
 
         function initializeIngredients() {
             ingredientsArea.innerHTML = '';
-            // Embaralha os nomes antes de renderizar
             const shuffledNames = shuffleArray([...ALL_INGREDIENT_NAMES]); 
             
             shuffledNames.forEach(name => {
@@ -752,6 +782,23 @@
         }
 
         function attachListeners() {
+            // O bug inicial de não conseguir clicar no botão 'Começar' foi abordado aqui:
+            // O evento 'input' garante que o botão seja habilitado assim que algo é digitado
+            nicknameInput.addEventListener('input', () => {
+                startGameButton.disabled = nicknameInput.value.trim().length === 0;
+            });
+            
+            startGameButton.addEventListener('click', async () => {
+                playerName = nicknameInput.value.trim();
+                if (playerName) {
+                    await loadPlayerProgress(playerName);
+                    loginScreen.style.display = 'none';
+                    gameScreen.style.display = 'block';
+                    statusText.textContent = `Olá, Chef ${playerName}! Faça ${WIN_COUNT} receitas!`;
+                    initializeGame();
+                }
+            });
+
             potDropzone.addEventListener('dragover', dragOver);
             potDropzone.addEventListener('dragenter', dragEnter);
             potDropzone.addEventListener('dragleave', dragLeave);
@@ -772,7 +819,7 @@
             attachListeners();
             updateGameDisplay();
             updatePotDisplay();
-            startTimer(); // INICIA O CRONÔMETRO AQUI
+            startTimer();
         }
         
         // --- DRAG-AND-DROP HANDLERS ---
@@ -806,6 +853,8 @@
             addIngredientToPot(ingredientName);
         }
 
+        // Garante que os listeners iniciais, como o do nickname, sejam anexados
+        attachListeners(); 
     </script>
 </body>
 </html>
