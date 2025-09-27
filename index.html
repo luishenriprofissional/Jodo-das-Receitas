@@ -31,7 +31,7 @@
             position: relative;
         }
 
-        /* --- Fundo da Cozinha (APLICADO AO CONTAINER PARA GARANTIR PREENCHIMENTO) --- */
+        /* --- Fundo da Cozinha --- */
         #game-screen {
             display: none;
             width: 100%;
@@ -40,18 +40,18 @@
             top: 0;
             left: 0;
             
-            /* Fundo da Cozinha GIF (Garantindo que preencha a tela) */
+            /* Melhor configuração para o fundo da cozinha */
             background-image: url('https://i.imgur.com/qKjBc1w.gif');
-            background-size: 100% 100%; /* Corrigido: Estica para preencher toda a área */
+            background-size: cover; /* Faz a imagem cobrir a tela sem esticar */
             background-repeat: no-repeat;
             background-position: center;
+            background-attachment: fixed; /* Fixa o fundo */
             
             color: white;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
             padding: 0; 
         }
         
-        /* O conteúdo do jogo (textos, botões, etc.) */
         #game-content {
             position: absolute;
             top: 50%;
@@ -59,28 +59,27 @@
             transform: translate(-50%, -50%);
             width: 80%;
             max-width: 900px;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.8); /* Fundo um pouco mais escuro para o conteúdo */
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
         }
-
-        /* --- Estilo da Tela de Login --- */
-        #login-screen {
-            padding: 40px 20px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            position: relative;
+        
+        /* --- CRONÔMETRO --- */
+        #timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: yellow;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid gold;
         }
-
-        #login-screen h1 { color: #4CAF50; }
-        #login-form input { padding: 10px; margin-right: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; width: 250px; }
-        #login-form button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; background-color: #4CAF50; color: white; transition: background-color 0.3s; }
-        #login-form button:hover:enabled { background-color: #45a049; }
-        #login-form button:disabled { background-color: #ccc; cursor: not-allowed; }
-
-        /* --- ESTILOS DA PANELA (IMAGEM E ZONA DE DROP) --- */
+        
+        /* --- ESTILOS DA PANELA --- */
         #stove-area {
             display: flex;
             justify-content: center;
@@ -94,50 +93,43 @@
             top: 10px; 
             width: 250px; 
             height: 250px; 
-            
-            background-image: url('https://i.imgur.com/D4TbjuJ.png'); /* Nova Panela */
+            background-image: url('https://i.imgur.com/D4TbjuJ.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            
             background-color: transparent;
             border: none;
-            
             color: rgba(255, 255, 255, 0.9);
             font-weight: bold;
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Alterado para que o conteúdo (ingredientes) fique no fundo */
             justify-content: flex-end; 
         }
 
-        /* Corrigido: Aumenta a margem superior para subir a frase */
         #pot-dropzone p {
-            margin-top: -15px; /* Subindo a frase SOLTE OS INGREDIENTES AQUI */
+            margin-top: -15px;
             font-size: 14px;
             position: absolute;
             top: 10px;
         }
 
         #current-ingredients {
-            /* Posição para ficar no 'fundo' da panela */
-            height: 70px; /* Altura da área visível de ingredientes */
-            width: 150px; /* Largura da boca da panela */
+            height: 70px;
+            width: 150px;
             padding: 5px;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            align-items: flex-end; /* Alinha os itens no fundo */
+            align-items: flex-end;
             gap: 5px;
             background-color: rgba(0, 0, 0, 0.4); 
             border-radius: 5px;
             box-sizing: border-box;
-            margin-bottom: 25px; /* Empurra para o fundo da imagem da panela */
+            margin-bottom: 25px;
         }
         
         .ingredient-in-pot {
-            /* Agora exibe a imagem reduzida do ingrediente */
             width: 30px; 
             height: 30px;
             animation: drop-in 0.5s ease-out;
@@ -151,7 +143,7 @@
             100% { transform: translateY(0) scale(1); opacity: 0.9; }
         }
 
-        /* --- ÁREA DE INGREDIENTES (IMAGENS) --- */
+        /* --- ÁREA DE INGREDIENTES (IMAGENS MAIORES) --- */
         #ingredients-area {
             display: flex;
             flex-wrap: wrap;
@@ -167,8 +159,8 @@
 
         .ingredient {
             cursor: grab;
-            width: 60px;
-            height: 60px;
+            width: 80px; /* Aumentado de 60px */
+            height: 80px; /* Aumentado de 60px */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -196,11 +188,81 @@
             white-space: nowrap;
             opacity: 0;
             transition: opacity 0.2s;
-            pointer-events: none; /* Garante que o tooltip não atrapalhe o mouse */
+            pointer-events: none;
         }
         
         .ingredient:hover::before { opacity: 1; }
         
+        /* --- CENTRALIZAÇÃO DOS BOTÕES --- */
+        #action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        /* --- TELAS DE RESULTADOS --- */
+        #results-screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            z-index: 999;
+            padding: 40px;
+            overflow-y: auto;
+        }
+        
+        #final-results {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            border: 1px solid gold;
+        }
+
+        #scoreboard {
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .score-list {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .score-list h3 {
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .podium-item {
+            background-color: #333;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+        }
+        .podium-item.gold { background-color: gold; color: black; }
+        .podium-item.silver { background-color: silver; color: black; }
+        .podium-item.bronze { background-color: #cd7f32; color: white; }
+
+        .all-times-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dashed #555;
+            font-size: 0.9em;
+        }
+
         /* --- FEEDBACK VISUAL (POPUP DE RECEITA PRONTA) --- */
         #recipe-popup {
             position: fixed;
@@ -241,7 +303,7 @@
         button { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; background-color: #4CAF50; color: white; transition: background-color 0.3s; }
         button:hover:enabled { background-color: #45a049; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
-        #clear-pot-button { background-color: #f44336; margin-left: 10px; }
+        #clear-pot-button { background-color: #f44336; }
     </style>
 </head>
 <body>
@@ -257,6 +319,7 @@
         </div>
 
         <div id="game-screen">
+            <div id="timer">00:00</div>
             <div id="game-content">
                 <h1>Mini-Jogo: Chef em Ação</h1>
                 <p id="status-text">Arraste os ingredientes para a panela e complete 3 receitas!</p>
@@ -272,9 +335,34 @@
                 <div id="ingredients-area">
                     </div>
 
-                <button id="check-recipe-button" disabled>Verificar Receita</button>
-                <button id="clear-pot-button">Limpar Panela</button>
+                <div id="action-buttons">
+                    <button id="check-recipe-button" disabled>Verificar Receita</button>
+                    <button id="clear-pot-button">Limpar Panela</button>
+                </div>
             </div>
+        </div>
+        
+        <div id="results-screen">
+            <h1 style="text-align: center;">Resultados do Jogo</h1>
+            
+            <div id="final-results">
+                <h2>Seu Resultado</h2>
+                <p><strong>Nickname:</strong> <span id="res-nick"></span></p>
+                <p><strong>Receitas Feitas:</strong> <span id="res-recipes"></span></p>
+                <p><strong>Tempo Total:</strong> <span id="res-time"></span></p>
+                <p><strong>Data/Hora de Conclusão:</strong> <span id="res-date"></span></p>
+                <button id="save-results-button" style="display: block; width: 100%;">Salvar Resultado e Ver Pódio</button>
+            </div>
+            
+            <div id="scoreboard">
+                <div id="podium-section" class="score-list">
+                    <h3>🏆 Pódio (Envios Mais Rápidos) 🏆</h3>
+                    </div>
+                <div id="all-times-section" class="score-list">
+                    <h3>⏱️ Todos os Tempos ⏱️</h3>
+                    </div>
+            </div>
+            <p style="text-align: center; margin-top: 30px; font-size: 0.9em;">*O pódio é baseado no tempo de envio. Em caso de empate, o tempo do jogo define a classificação.</p>
         </div>
         
         <div id="recipe-popup" style="display:none;"></div>
@@ -333,6 +421,7 @@
             'Almôndegas': 'https://i.imgur.com/blGMtBW.png',
             'Hambúrguer': 'https://i.imgur.com/HYzjOL5.png'
         };
+        const ALL_INGREDIENT_NAMES = Object.keys(ALL_INGREDIENTS_DATA);
 
         // --- VARIÁVEIS DE ESTADO ---
         let playerName = null;
@@ -340,13 +429,23 @@
         let recipesCompleted = [];
         let gameWon = false;
         const WIN_COUNT = 3;
+        
+        // Variáveis do Cronômetro
+        let startTime = null;
+        let gameTimeInSeconds = 0;
+        let timerInterval = null;
+        
+        // Variáveis de Resultado Final
+        let finishDate = null;
 
         // --- ELEMENTOS DO DOM ---
         const loginScreen = document.getElementById('login-screen');
         const gameScreen = document.getElementById('game-screen');
+        const resultsScreen = document.getElementById('results-screen');
         const nicknameInput = document.getElementById('nickname-input');
         const startGameButton = document.getElementById('start-game-button');
         const playerStatusMessage = document.getElementById('player-status-message');
+        const timerDisplay = document.getElementById('timer');
         
         const potDropzone = document.getElementById('pot-dropzone');
         const ingredientsArea = document.getElementById('ingredients-area');
@@ -358,50 +457,39 @@
         const dropSound = document.getElementById('drop-sound');
         const plinSound = document.getElementById('plin-sound');
         const recipePopup = document.getElementById('recipe-popup');
+        const saveResultsButton = document.getElementById('save-results-button');
+        const podiumSection = document.getElementById('podium-section');
+        const allTimesSection = document.getElementById('all-times-section');
 
 
-        // --- LÓGICA DE LOGIN/INICIALIZAÇÃO ---
-
-        nicknameInput.addEventListener('input', () => {
-            startGameButton.disabled = nicknameInput.value.trim().length === 0;
-        });
-
-        startGameButton.addEventListener('click', async () => {
-            playerName = nicknameInput.value.trim();
-            if (playerName) {
-                await loadPlayerProgress(playerName);
-                loginScreen.style.display = 'none';
-                gameScreen.style.display = 'block';
-                statusText.textContent = `Olá, Chef ${playerName}! Faça ${WIN_COUNT} receitas!`;
-                initializeGame();
-            }
-        });
-
-        async function loadPlayerProgress(nick) {
-            try {
-                const docRef = db.collection('jogadores').doc(nick);
-                const doc = await docRef.get();
-
-                if (doc.exists) {
-                    const data = doc.data();
-                    recipesCompleted = data.recipesCompleted || [];
-                    playerStatusMessage.textContent = `Progresso de ${nick} carregado. Receitas feitas: ${recipesCompleted.length}.`;
-                } else {
-                    await docRef.set({
-                        nick: nick,
-                        recipesCompleted: [],
-                        lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    recipesCompleted = [];
-                    playerStatusMessage.textContent = `Novo jogador ${nick} registrado.`;
-                }
-            } catch (error) {
-                console.error("Erro ao carregar/salvar progresso no Firebase:", error);
-                playerStatusMessage.textContent = "Erro de conexão com o Firebase. O progresso não será salvo.";
-            }
+        // --- FUNÇÕES DE CRONÔMETRO ---
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
-        // --- FUNÇÕES DE JOGO PRINCIPAIS ---
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                gameTimeInSeconds = Math.floor((Date.now() - startTime) / 1000);
+                timerDisplay.textContent = formatTime(gameTimeInSeconds);
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        // --- FUNÇÕES GERAIS ---
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
 
         function areListsEqual(list1, list2) {
             if (list1.length !== list2.length) return false;
@@ -409,6 +497,25 @@
             const sorted2 = [...list2].sort();
             return sorted1.every((value, index) => value === sorted2[index]);
         }
+        
+        function updatePotDisplay() {
+            currentIngredientsDiv.innerHTML = '';
+            ingredientsInPot.forEach(ingName => {
+                const img = document.createElement('img');
+                img.src = ALL_INGREDIENTS_DATA[ingName];
+                img.alt = ingName;
+                img.className = 'ingredient-in-pot';
+                img.setAttribute('title', ingName);
+                currentIngredientsDiv.appendChild(img);
+            });
+            checkRecipeButton.disabled = ingredientsInPot.length === 0;
+        }
+
+        function updateGameDisplay() {
+            recipeCounter.textContent = `Receitas Completas: ${recipesCompleted.length}/${WIN_COUNT}`;
+        }
+
+        // --- LÓGICA DE JOGO ---
 
         async function checkRecipe() {
             if (gameWon) return;
@@ -434,18 +541,16 @@
                 
                 showRecipePopup(foundRecipeData.name, foundRecipeData.image);
 
-                // Limpa a panela
                 ingredientsInPot = [];
                 updatePotDisplay();
-
-                await saveProgressToFirebase();
+                await savePlayerProgress(playerName);
                 
                 updateGameDisplay();
                 if (recipesCompleted.length >= WIN_COUNT) {
                     gameWon = true;
-                    statusText.textContent = `VITÓRIA! Você completou ${recipesCompleted.length} receitas e venceu o jogo! Parabéns, Chef ${playerName}!`;
-                    checkRecipeButton.disabled = true;
-                    ingredientsArea.innerHTML = '<h2>🎉 JOGO COMPLETO! 🎉</h2>';
+                    stopTimer();
+                    finishDate = new Date(); // Registra a data/hora final
+                    endGame(); // Chama a tela final
                 }
 
             } else {
@@ -453,48 +558,10 @@
             }
         }
         
-        function showRecipePopup(name, imageUrl) {
-            plinSound.currentTime = 0;
-            plinSound.play();
-            
-            recipePopup.innerHTML = `
-                <h2>Receita Pronta: ${name}!</h2>
-                <img src="${imageUrl}" alt="${name}">
-            `;
-            recipePopup.style.display = 'flex';
-            
-            // Reset de animação para o próximo uso
-            recipePopup.style.opacity = 1;
-            recipePopup.style.animation = 'none'; 
-            setTimeout(() => {
-                recipePopup.style.animation = 'fade-out 0.5s 4.5s forwards';
-            }, 10);
-            
-            // Esconde o popup após 5 segundos
-            setTimeout(() => {
-                recipePopup.style.display = 'none';
-                statusText.textContent = `Você fez um(a) ${name}! Próxima receita...`;
-            }, 5000); 
-        }
-
-        async function saveProgressToFirebase() {
-            if (!playerName) return;
-            try {
-                await db.collection('jogadores').doc(playerName).update({
-                    recipesCompleted: recipesCompleted,
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (error) {
-                console.error("Erro ao salvar progresso no Firebase:", error);
-            }
-        }
-
         function addIngredientToPot(ingredientName) {
             if (gameWon) return;
             
-            // Checagem se o ingrediente já está na panela. 
-            // Para permitir múltiplos do mesmo, você precisaria de uma lógica mais complexa (como um contador)
-            // Mantendo a regra atual de 'apenas um de cada'.
+            // Permite apenas um de cada ingrediente
             if (ingredientsInPot.includes(ingredientName)) {
                 statusText.textContent = `${ingredientName} já está na panela!`;
                 return;
@@ -506,72 +573,164 @@
             updatePotDisplay();
             statusText.textContent = `${ingredientName} adicionado.`;
         }
+        
+        // --- FUNÇÕES DE CONEXÃO COM FIREBASE ---
 
-        /* CORRIGIDO: Agora exibe as imagens dos ingredientes dentro da panela */
-        function updatePotDisplay() {
-            currentIngredientsDiv.innerHTML = '';
-            ingredientsInPot.forEach(ingName => {
-                const img = document.createElement('img');
-                img.src = ALL_INGREDIENTS_DATA[ingName]; // Usa a URL da imagem
-                img.alt = ingName;
-                img.className = 'ingredient-in-pot';
-                img.setAttribute('title', ingName); // Adiciona um tooltip ao passar o mouse
-                currentIngredientsDiv.appendChild(img);
-            });
-            checkRecipeButton.disabled = ingredientsInPot.length === 0;
-        }
+        async function loadPlayerProgress(nick) {
+            try {
+                const docRef = db.collection('jogadores').doc(nick);
+                const doc = await docRef.get();
 
-        function updateGameDisplay() {
-            recipeCounter.textContent = `Receitas Completas: ${recipesCompleted.length}/${WIN_COUNT}`;
-        }
-
-        function clearPot() {
-            ingredientsInPot = [];
-            updatePotDisplay();
-            statusText.textContent = 'Panela limpa. Comece uma nova receita!';
-        }
-
-        // --- LÓGICA DO DRAG-AND-DROP ---
-
-        function dragStart(e) {
-            e.dataTransfer.setData('text/plain', e.target.closest('.ingredient').getAttribute('data-name'));
-            e.target.closest('.ingredient').style.opacity = '0.5';
-        }
-
-        function dragEnd(e) {
-            e.target.closest('.ingredient').style.opacity = '1';
-        }
-
-        function dragOver(e) {
-            e.preventDefault();
-        }
-
-        function dragEnter(e) {
-            if (e.target.closest('#pot-dropzone')) {
-                potDropzone.classList.add('highlight');
+                if (doc.exists) {
+                    const data = doc.data();
+                    recipesCompleted = data.recipesCompleted || [];
+                    playerStatusMessage.textContent = `Progresso de ${nick} carregado. Receitas feitas: ${recipesCompleted.length}.`;
+                } else {
+                    await docRef.set({
+                        nick: nick,
+                        recipesCompleted: [],
+                        lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    recipesCompleted = [];
+                    playerStatusMessage.textContent = `Novo jogador ${nick} registrado.`;
+                }
+            } catch (error) {
+                console.error("Erro ao carregar/salvar progresso no Firebase:", error);
+                playerStatusMessage.textContent = "Erro de conexão com o Firebase. O progresso não será salvo.";
             }
         }
 
-        function dragLeave(e) {
-            if (e.target.closest('#pot-dropzone')) {
-                potDropzone.classList.remove('highlight');
+        async function savePlayerProgress(nick) {
+            if (!nick) return;
+            try {
+                await db.collection('jogadores').doc(nick).update({
+                    recipesCompleted: recipesCompleted,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                console.error("Erro ao salvar progresso no Firebase:", error);
+            }
+        }
+        
+        // --- FUNÇÕES DE RESULTADOS FINAIS E PÓDIO ---
+        
+        function endGame() {
+            gameScreen.style.display = 'none';
+            resultsScreen.style.display = 'block';
+
+            // Popula os resultados do jogador
+            document.getElementById('res-nick').textContent = playerName;
+            document.getElementById('res-recipes').textContent = `${recipesCompleted.length}/${Object.keys(ALL_RECIPES).length}`;
+            document.getElementById('res-time').textContent = formatTime(gameTimeInSeconds);
+            document.getElementById('res-date').textContent = finishDate.toLocaleString();
+        }
+
+        async function saveFinalScore() {
+            if (!playerName || gameTimeInSeconds === 0) {
+                alert("Nenhum jogo válido para salvar.");
+                return;
+            }
+            
+            saveResultsButton.disabled = true;
+            saveResultsButton.textContent = "Salvando...";
+
+            const scoreData = {
+                nick: playerName,
+                timeInSeconds: gameTimeInSeconds,
+                timeFormatted: formatTime(gameTimeInSeconds),
+                recipesCompleted: recipesCompleted.length,
+                submittedAt: firebase.firestore.FieldValue.serverTimestamp() // Critério principal
+            };
+
+            try {
+                // Salva o resultado final em uma nova coleção 'scores'
+                await db.collection('scores').add(scoreData);
+                alert("Resultado salvo com sucesso! Carregando pódio...");
+                await loadScoreboard();
+                saveResultsButton.textContent = "Resultado Salvo!";
+            } catch (error) {
+                console.error("Erro ao salvar o score final:", error);
+                alert("Erro ao salvar o resultado. Tente novamente.");
+                saveResultsButton.disabled = false;
+                saveResultsButton.textContent = "Salvar Resultado e Ver Pódio";
+            }
+        }
+        
+        async function loadScoreboard() {
+            podiumSection.innerHTML = '<h3>🏆 Pódio (Envios Mais Rápidos) 🏆</h3><p>Carregando...</p>';
+            allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos ⏱️</h3><p>Carregando...</p>';
+            
+            try {
+                // 1. Coleta todos os resultados, ordenando primeiro por tempo de envio, e depois por tempo de jogo
+                const snapshot = await db.collection('scores')
+                                         .orderBy('submittedAt', 'asc') // 1º Critério: Quem enviou primeiro
+                                         .orderBy('timeInSeconds', 'asc') // 2º Critério: Desempate pelo menor tempo de jogo
+                                         .get();
+                
+                let allScores = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Converte o Timestamp do Firebase para objeto Date local
+                    const date = data.submittedAt ? data.submittedAt.toDate() : new Date();
+                    allScores.push({
+                        nick: data.nick,
+                        timeFormatted: data.timeFormatted,
+                        submittedAt: date.toLocaleString(),
+                        timeInSeconds: data.timeInSeconds
+                    });
+                });
+
+                // 2. Preenche o Pódio
+                podiumSection.innerHTML = '<h3>🏆 Pódio (Envios Mais Rápidos) 🏆</h3>';
+                const podiumNames = ['🥇 1º Lugar (Ouro)', '🥈 2º Lugar (Prata)', '🥉 3º Lugar (Bronze)'];
+                const podiumClasses = ['gold', 'silver', 'bronze'];
+
+                if (allScores.length === 0) {
+                    podiumSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
+                } else {
+                    for (let i = 0; i < Math.min(3, allScores.length); i++) {
+                        const score = allScores[i];
+                        podiumSection.innerHTML += `
+                            <div class="podium-item ${podiumClasses[i]}">
+                                <strong>${podiumNames[i]}</strong>: ${score.nick}<br>
+                                Tempo de Jogo: ${score.timeFormatted}
+                            </div>
+                        `;
+                    }
+                }
+
+                // 3. Preenche a lista de Todos os Tempos
+                allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos ⏱️</h3>';
+                if (allScores.length === 0) {
+                    allTimesSection.innerHTML += '<p>Nenhum resultado salvo ainda.</p>';
+                } else {
+                    allScores.forEach(score => {
+                        allTimesSection.innerHTML += `
+                            <div class="all-times-item">
+                                <div><strong>${score.nick}</strong></div>
+                                <div>${score.timeFormatted}</div>
+                                <div style="font-size: 0.8em; color: #bbb;">${score.submittedAt.split(',')[0]}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+
+            } catch (error) {
+                console.error("Erro ao carregar o placar do Firebase:", error);
+                podiumSection.innerHTML = '<h3>🏆 Pódio</h3><p>Erro ao carregar o placar.</p>';
+                allTimesSection.innerHTML = '<h3>⏱️ Todos os Tempos</h3><p>Erro ao carregar os tempos.</p>';
             }
         }
 
-        function drop(e) {
-            e.preventDefault();
-            potDropzone.classList.remove('highlight');
-            
-            const ingredientName = e.dataTransfer.getData('text/plain');
-            
-            addIngredientToPot(ingredientName);
-        }
-
-        // --- INICIALIZAÇÃO DO JOGO ---
+        // --- INICIALIZAÇÃO E LISTENERS ---
 
         function initializeIngredients() {
             ingredientsArea.innerHTML = '';
-            for (const name in ALL_INGREDIENTS_DATA) {
+            // Embaralha os nomes antes de renderizar
+            const shuffledNames = shuffleArray([...ALL_INGREDIENT_NAMES]); 
+            
+            shuffledNames.forEach(name => {
                 const url = ALL_INGREDIENTS_DATA[name];
                 
                 const div = document.createElement('div');
@@ -589,7 +748,7 @@
                 div.addEventListener('dragstart', dragStart);
                 div.addEventListener('dragend', dragEnd);
                 ingredientsArea.appendChild(div);
-            }
+            });
         }
 
         function attachListeners() {
@@ -599,7 +758,13 @@
             potDropzone.addEventListener('drop', drop);
 
             checkRecipeButton.addEventListener('click', checkRecipe);
-            clearPotButton.addEventListener('click', clearPot);
+            clearPotButton.addEventListener('click', () => {
+                ingredientsInPot = [];
+                updatePotDisplay();
+                statusText.textContent = 'Panela limpa. Comece uma nova receita!';
+            });
+            
+            saveResultsButton.addEventListener('click', saveFinalScore);
         }
 
         function initializeGame() {
@@ -607,6 +772,38 @@
             attachListeners();
             updateGameDisplay();
             updatePotDisplay();
+            startTimer(); // INICIA O CRONÔMETRO AQUI
+        }
+        
+        // --- DRAG-AND-DROP HANDLERS ---
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.closest('.ingredient').getAttribute('data-name'));
+            e.target.closest('.ingredient').style.opacity = '0.5';
+        }
+
+        function dragEnd(e) {
+            e.target.closest('.ingredient').style.opacity = '1';
+        }
+
+        function dragOver(e) { e.preventDefault(); }
+
+        function dragEnter(e) {
+            if (e.target.closest('#pot-dropzone')) {
+                potDropzone.classList.add('highlight');
+            }
+        }
+
+        function dragLeave(e) {
+            if (e.target.closest('#pot-dropzone')) {
+                potDropzone.classList.remove('highlight');
+            }
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            potDropzone.classList.remove('highlight');
+            const ingredientName = e.dataTransfer.getData('text/plain');
+            addIngredientToPot(ingredientName);
         }
 
     </script>
