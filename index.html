@@ -15,15 +15,24 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #f4f4f9;
+            
+            /* --- INÍCIO: NOVAS PROPRIEDADES DE FUNDO --- */
+            background-image: url('https://i.imgur.com/TLze8GZ.png');
+            background-size: cover; /* Faz a imagem cobrir toda a área */
+            background-position: center; /* Centraliza a imagem */
+            background-attachment: fixed; /* Mantém a imagem fixa ao rolar (opcional) */
+            /* --- FIM: NOVAS PROPRIEDADES DE FUNDO --- */
+            
+            background-color: #f4f4f9; /* Cor de fallback, caso a imagem falhe */
         }
 
         #app-container {
-            background-color: #fff;
+            /* O CONTAINER PRINCIPAL DO JOGO */
+            background-color: rgba(255, 255, 255, 0.95); /* Fundo branco semi-transparente para o texto ser legível */
             border: 2px solid #333;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Sombra mais escura para destacar sobre o fundo */
             text-align: center;
             width: 800px;
         }
@@ -116,6 +125,7 @@
             border: 1px solid #ddd;
             padding: 15px;
             border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.7); /* Fundo semi-transparente para os ingredientes */
         }
 
         .ingredient {
@@ -222,7 +232,6 @@
         const db = app.firestore();
         
         // --- DADOS DO JOGO (Regras) ---
-        // As chaves são os IDs de receita que serão salvos no Firebase
         const ALL_RECIPES = {
             'bolo_chocolate': { name: 'Bolo de Chocolate', ingredients: ['Ovos', 'Leite', 'Trigo', 'Chocolate', 'Fermento', 'Açúcar'] },
             'bife_pure': { name: 'Bife com Purê', ingredients: ['Bife', 'Purê de batata'] },
@@ -280,7 +289,6 @@
 
         /**
          * Carrega o progresso do jogador do Firebase ou inicializa.
-         * @param {string} nick - O nome do jogador (usado como ID do documento).
          */
         async function loadPlayerProgress(nick) {
             try {
@@ -371,7 +379,7 @@
          * Salva o progresso do jogador no Firebase.
          */
         async function saveProgressToFirebase() {
-            if (!playerName) return; // Não salva se não houver Nick
+            if (!playerName) return;
             try {
                 await db.collection('jogadores').doc(playerName).update({
                     recipesCompleted: recipesCompleted,
@@ -379,7 +387,6 @@
                 });
             } catch (error) {
                 console.error("Erro ao salvar progresso no Firebase:", error);
-                // O jogo continua, mas o progresso pode não estar salvo.
             }
         }
 
@@ -398,21 +405,7 @@
             dropSound.currentTime = 0;
             dropSound.play();
             updatePotDisplay();
-            statusText.textContent = `${ingredientName} adicionado. Faltam ${ALL_RECIPES[Object.keys(ALL_RECIPES).find(id => !recipesCompleted.includes(id))]?.ingredients.length - ingredientsInPot.length || '?'} itens para a próxima receita...`;
-        }
-
-        /**
-         * Atualiza o display dos ingredientes na panela.
-         */
-        function updatePotDisplay() {
-            currentIngredientsDiv.innerHTML = '';
-            ingredientsInPot.forEach(ing => {
-                const span = document.createElement('span');
-                span.textContent = ing;
-                span.className = 'ingredient-in-pot';
-                currentIngredientsDiv.appendChild(span);
-            });
-            checkRecipeButton.disabled = ingredientsInPot.length === 0;
+            statusText.textContent = `${ingredientName} adicionado.`;
         }
 
         /**
