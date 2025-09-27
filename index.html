@@ -36,19 +36,21 @@
             position: relative;
         }
 
-        /* TELA DE LOGIN é a única visível por padrão */
+        /* 1. CORREÇÃO: Força o Login a estar no topo e com fundo sólido */
         #login-screen {
-            display: block; /* Garante que a tela de login comece visível */
+            display: block;
             text-align: center;
             padding: 40px;
-            background-color: white;
+            background-color: white; /* Garante que o fundo não seja transparente */
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative; /* Mantém na frente do game-screen, que é absolute */
+            z-index: 10; /* Garante que está acima de tudo, exceto popups */
         }
 
         /* --- Fundo da Cozinha --- */
         #game-screen {
-            display: none; /* CORREÇÃO CRÍTICA: Esconde o jogo inicialmente */
+            display: none;
             width: 100%;
             height: 100%;
             position: absolute;
@@ -67,6 +69,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            z-index: 5; /* Abaixo do login, mas acima do fundo básico */
         }
         
         /* Redimensionado para ficar apenas na parte dos ingredientes e botões */
@@ -84,6 +87,7 @@
             text-align: center;
             min-width: 500px;
             margin: 20px;
+            z-index: 7; /* Garante que o conteúdo do jogo esteja acima da tela do jogo */
         }
         
         /* --- CRONÔMETRO --- */
@@ -176,7 +180,7 @@
             100% { transform: translateY(0) scale(1); opacity: 0.9; }
         }
 
-        /* --- ÁREA DE INGREDIENTES (TAMANHO ORIGINAL) --- */
+        /* --- ÁREA DE INGREDIENTES (CORREÇÃO DA VISIBILIDADE) --- */
         #ingredients-area {
             display: flex;
             flex-wrap: wrap;
@@ -184,11 +188,15 @@
             justify-content: center;
             margin-top: 20px;
             padding: 15px;
-            border-radius: 8px;
+            /* Fundo branco transparente deve ser totalmente visível */
             background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 8px;
             color: black;
             text-shadow: none;
             min-width: 450px;
+            /* CORREÇÃO: Z-index alto para garantir que fique acima de outros elementos do game-screen */
+            position: relative; 
+            z-index: 8; 
         }
 
         .ingredient {
@@ -237,7 +245,7 @@
         
         /* --- TELAS DE RESULTADOS --- */
         #results-screen {
-            display: none; /* CORREÇÃO CRÍTICA: Garante que a tela de resultados inicie invisível */
+            display: none;
             width: 100%;
             height: 100%;
             position: absolute;
@@ -248,7 +256,6 @@
             z-index: 999;
             padding: 40px;
             overflow-y: auto;
-            /* Usar display flex e centralização via JS em endGame() */
         }
         
         #final-results {
@@ -309,7 +316,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(139, 0, 0, 0.8);
-            display: none; /* CORREÇÃO CRÍTICA: Inicia escondido */
+            display: none;
             justify-content: center;
             align-items: center;
             flex-direction: column;
@@ -330,6 +337,7 @@
             50% { transform: scale(1.2); opacity: 1; }
             100% { transform: scale(1); }
         }
+        
         /* --- OUTROS ESTILOS DE POPUP E BOTÕES MANTIDOS --- */
         #recipe-popup {
             position: fixed;
@@ -729,7 +737,7 @@
             loginScreen.style.display = 'none';
             gameScreen.style.display = 'none';
             
-            resultsScreen.style.display = 'flex'; // Torna a tela visível
+            resultsScreen.style.display = 'flex'; 
             resultsScreen.style.flexDirection = 'column';
             resultsScreen.style.alignItems = 'center';
             resultsScreen.style.justifyContent = 'center';
@@ -872,7 +880,7 @@
                     await loadPlayerProgress(playerName);
                     loginScreen.style.display = 'none';
                     gameScreen.style.display = 'flex';
-                    resultsScreen.style.display = 'none'; // Garante que a tela de resultados está escondida
+                    resultsScreen.style.display = 'none';
                     statusText.textContent = `Olá, Chef ${playerName}! Faça ${WIN_COUNT} receitas!`;
                     initializeGame();
                 }
