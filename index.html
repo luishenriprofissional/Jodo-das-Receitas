@@ -6,6 +6,7 @@
     <title>Atividade do Restaurante: Jogo das Receitas</title>
     
     <link rel="icon" type="image/png" href="https://i.imgur.com/kK3k4kx.png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -35,9 +36,19 @@
             position: relative;
         }
 
+        /* TELA DE LOGIN é a única visível por padrão */
+        #login-screen {
+            display: block; /* Garante que a tela de login comece visível */
+            text-align: center;
+            padding: 40px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
         /* --- Fundo da Cozinha --- */
         #game-screen {
-            display: none;
+            display: none; /* CORREÇÃO CRÍTICA: Esconde o jogo inicialmente */
             width: 100%;
             height: 100%;
             position: absolute;
@@ -53,29 +64,26 @@
             color: white;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
             padding: 0; 
-            display: flex; /* Adicionado para centralizar o game-content flexivelmente */
-            justify-content: center; /* Centraliza horizontalmente */
-            align-items: center; /* Centraliza verticalmente */
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         /* Redimensionado para ficar apenas na parte dos ingredientes e botões */
         #game-content {
-            position: relative; /* Mudado de absolute para relative, pois o pai já é flex */
-            width: auto; /* Ajusta a largura automaticamente ao conteúdo */
+            position: relative;
+            width: auto;
             max-width: 900px;
             background-color: rgba(0, 0, 0, 0.8); 
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-            display: flex; /* Para organizar o conteúdo interno */
-            flex-direction: column; /* Itens um abaixo do outro */
-            align-items: center; /* Centraliza os itens dentro do game-content */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
-            transform: none; /* Remove a transformação de centralização, já feita pelo pai */
-            top: auto; /* Remove posicionamento absoluto */
-            left: auto; /* Remove posicionamento absoluto */
-            min-width: 500px; /* Garante uma largura mínima */
-            margin: 20px; /* Adiciona margem para não colar nas bordas */
+            min-width: 500px;
+            margin: 20px;
         }
         
         /* --- CRONÔMETRO --- */
@@ -90,16 +98,15 @@
             padding: 5px 10px;
             border-radius: 5px;
             border: 1px solid gold;
-            /* Aplicando a nova fonte */
             font-family: 'Press Start 2P', cursive, monospace;
         }
 
         /* --- Título do Jogo na tela de jogo --- */
         #game-content h1 {
-            font-family: 'Press Start 2P', cursive, monospace; /* Mesma fonte do cronômetro */
-            color: #4CAF50; /* Cor verde para destaque */
+            font-family: 'Press Start 2P', cursive, monospace;
+            color: #4CAF50;
             margin-bottom: 10px;
-            font-size: 1.8em; /* Ajusta o tamanho se necessário */
+            font-size: 1.8em;
         }
         #game-content p {
             margin-bottom: 5px;
@@ -181,13 +188,13 @@
             background-color: rgba(255, 255, 255, 0.85);
             color: black;
             text-shadow: none;
-            min-width: 450px; /* Garante que a área de ingredientes não encolha demais */
+            min-width: 450px;
         }
 
         .ingredient {
             cursor: grab;
-            width: 60px; /* Revertido para 60px */
-            height: 60px; /* Revertido para 60px */
+            width: 60px;
+            height: 60px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -225,12 +232,12 @@
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-top: 20px; /* Adiciona espaçamento superior */
+            margin-top: 20px;
         }
         
         /* --- TELAS DE RESULTADOS --- */
         #results-screen {
-            display: none;
+            display: none; /* CORREÇÃO CRÍTICA: Garante que a tela de resultados inicie invisível */
             width: 100%;
             height: 100%;
             position: absolute;
@@ -241,9 +248,7 @@
             z-index: 999;
             padding: 40px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            /* Usar display flex e centralização via JS em endGame() */
         }
         
         #final-results {
@@ -296,7 +301,36 @@
             font-size: 0.9em;
         }
 
-        /* --- FEEDBACK VISUAL (POPUP DE RECEITA PRONTA) --- */
+        /* --- POPUP DE ERRO --- */
+        #error-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(139, 0, 0, 0.8);
+            display: none; /* CORREÇÃO CRÍTICA: Inicia escondido */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1001;
+            color: white;
+            font-family: 'Press Start 2P', cursive, monospace;
+            text-shadow: 2px 2px 5px black;
+        }
+        
+        #error-popup h2 {
+            font-size: 3em;
+            margin: 0;
+            animation: bounce-in 0.5s ease-out;
+        }
+
+        @keyframes bounce-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        /* --- OUTROS ESTILOS DE POPUP E BOTÕES MANTIDOS --- */
         #recipe-popup {
             position: fixed;
             top: 0;
@@ -331,37 +365,7 @@
         @keyframes fade-out {
             to { opacity: 0; visibility: hidden; }
         }
-
-        /* --- POPUP DE ERRO --- */
-        #error-popup {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(139, 0, 0, 0.8); /* Vermelho escuro transparente */
-            display: none; /* Inicia escondido */
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 1001; /* Acima do popup de receita */
-            color: white;
-            font-family: 'Press Start 2P', cursive, monospace;
-            text-shadow: 2px 2px 5px black;
-        }
         
-        #error-popup h2 {
-            font-size: 3em;
-            margin: 0;
-            animation: bounce-in 0.5s ease-out;
-        }
-
-        @keyframes bounce-in {
-            0% { transform: scale(0.5); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(1); }
-        }
-        /* --- BOTÕES E GERAL --- */
         button { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; background-color: #4CAF50; color: white; transition: background-color 0.3s; }
         button:hover:enabled { background-color: #45a049; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
@@ -435,7 +439,9 @@
 
     <audio id="drop-sound" src="ding.mp3" preload="auto"></audio>
     <audio id="plin-sound" src="plin.mp3" preload="auto"></audio>
-    <audio id="error-sound" src="error.mp3" preload="auto"></audio> <script>
+    <audio id="error-sound" src="error.mp3" preload="auto"></audio>
+
+    <script>
         // Use a configuração da imagem enviada para o Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyD0f60PyH7r2b13Py4DbDixudkb1GJam5BA",
@@ -517,9 +523,9 @@
         const clearPotButton = document.getElementById('clear-pot-button');
         const dropSound = document.getElementById('drop-sound');
         const plinSound = document.getElementById('plin-sound');
-        const errorSound = document.getElementById('error-sound'); // Novo som
+        const errorSound = document.getElementById('error-sound');
         const recipePopup = document.getElementById('recipe-popup');
-        const errorPopup = document.getElementById('error-popup'); // Novo popup
+        const errorPopup = document.getElementById('error-popup');
         const saveResultsButton = document.getElementById('save-results-button');
         const podiumSection = document.getElementById('podium-section');
         const allTimesSection = document.getElementById('all-times-section');
@@ -619,10 +625,9 @@
                 }
 
             } else {
-                // LÓGICA DE ERRO DA RECEITA
-                showErrorPopup(); // Mostra o popup de erro
+                showErrorPopup();
                 statusText.textContent = `Receita Errada! Tente uma nova combinação ou limpe a panela.`;
-                ingredientsInPot = []; // Limpa a panela após o erro
+                ingredientsInPot = [];
                 updatePotDisplay();
             }
         }
@@ -670,16 +675,14 @@
             }, 5000); 
         }
 
-        // NOVA FUNÇÃO PARA EXIBIR O POPUP DE ERRO
         function showErrorPopup() {
             errorSound.currentTime = 0;
-            errorSound.play(); // Toca o som de erro
+            errorSound.play();
             errorPopup.style.display = 'flex';
             
-            // Esconde o popup após alguns segundos
             setTimeout(() => {
                 errorPopup.style.display = 'none';
-            }, 3000); // 3 segundos
+            }, 3000);
         }
 
         // --- FUNÇÕES DE CONEXÃO COM FIREBASE ---
@@ -723,12 +726,13 @@
         // --- FUNÇÕES DE RESULTADOS FINAIS E PÓDIO ---
         
         function endGame() {
+            loginScreen.style.display = 'none';
             gameScreen.style.display = 'none';
-            resultsScreen.style.display = 'flex'; // Usar flex para centralizar o conteúdo
-            resultsScreen.style.flexDirection = 'column'; // Organizar em coluna
-            resultsScreen.style.alignItems = 'center'; // Centralizar horizontalmente
-            resultsScreen.style.justifyContent = 'center'; // Centralizar verticalmente
-
+            
+            resultsScreen.style.display = 'flex'; // Torna a tela visível
+            resultsScreen.style.flexDirection = 'column';
+            resultsScreen.style.alignItems = 'center';
+            resultsScreen.style.justifyContent = 'center';
 
             document.getElementById('res-nick').textContent = playerName;
             document.getElementById('res-recipes').textContent = `${recipesCompleted.length}/${Object.keys(ALL_RECIPES).length}`;
@@ -867,7 +871,8 @@
                 if (playerName) {
                     await loadPlayerProgress(playerName);
                     loginScreen.style.display = 'none';
-                    gameScreen.style.display = 'flex'; // Garante que game-screen use flex para centralização
+                    gameScreen.style.display = 'flex';
+                    resultsScreen.style.display = 'none'; // Garante que a tela de resultados está escondida
                     statusText.textContent = `Olá, Chef ${playerName}! Faça ${WIN_COUNT} receitas!`;
                     initializeGame();
                 }
@@ -890,8 +895,6 @@
 
         function initializeGame() {
             initializeIngredients();
-            // Já anexado no attachListeners globalmente
-            // attachListeners(); 
             updateGameDisplay();
             updatePotDisplay();
             startTimer();
@@ -928,8 +931,6 @@
             addIngredientToPot(ingredientName);
         }
 
-        // Garante que os listeners iniciais, como o do nickname, sejam anexados
-        // Essa chamada é essencial para que o botão 'Começar' funcione no carregamento inicial
         attachListeners(); 
     </script>
 </body>
