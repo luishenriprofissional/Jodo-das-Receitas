@@ -611,6 +611,10 @@
             <div id="final-results">
                 <h2>Seu Resultado</h2>
                 <p id="player-previous-result"></p>
+                <p id="res-nick" style="display:none;"></p>
+                <p id="res-recipes" style="display:none;"></p>
+                <p id="res-time" style="display:none;"></p>
+                <p id="res-date" style="display:none;"></p>
                 <button id="start-new-game-button" style="display: block; width: 100%; margin-top: 10px;">Iniciar Novo Jogo</button>
                 <button id="save-results-button" style="display: none; width: 100%;">Salvar Resultado e Ver Pódio</button>
             </div>
@@ -1359,15 +1363,14 @@
 
             // Esconde os elementos de resultado anterior e exibe os de resultado novo
             playerPreviousResult.innerHTML = '';
-            document.getElementById('res-nick').textContent = playerName;
-            document.getElementById('res-recipes').textContent = `${recipesCompleted.length}/${Object.keys(ALL_RECIPES).length}`;
-            document.getElementById('res-time').textContent = formatTime(gameTimeInSeconds);
             
-            document.getElementById('res-date').textContent = finishDate.toLocaleDateString('pt-BR') + ' ' + finishDate.toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit' 
-            });
+            // Exibe os dados do jogo atual na tela de resultado
+            const finalResultsDiv = document.getElementById('final-results');
+            finalResultsDiv.innerHTML = `
+                <h2>Parabéns, ${playerName}!</h2>
+                <p>Você completou todas as ${WIN_COUNT} receitas!</p>
+                <p>Seu tempo: <strong>${formatTime(gameTimeInSeconds)}</strong></p>
+            `;
             
             saveResultsButton.style.display = 'block';
             startNewGameButton.style.display = 'none';
@@ -1397,9 +1400,10 @@
                 await loadScoreboard();
                 saveResultsButton.textContent = "Resultado Salvo!";
                 
-                // Depois de salvar, atualiza o status do jogador
+                // Depois de salvar, atualiza o status do jogador para permitir o "Iniciar Novo Jogo"
                 playerPlayedBefore = true; 
-
+                startNewGameButton.style.display = 'block'; // Permite que ele clique em Novo Jogo
+                
             } catch (error) {
                 console.error("Erro ao salvar o score final:", error);
                 alert("Erro ao salvar o resultado. Tente novamente.");
@@ -1493,13 +1497,11 @@
             saveResultsButton.style.display = 'none';
             startNewGameButton.style.display = 'block';
 
-            document.getElementById('res-nick').textContent = nick;
-            document.getElementById('res-recipes').textContent = 'N/A';
-            document.getElementById('res-time').textContent = 'N/A';
-            document.getElementById('res-date').textContent = 'N/A';
-
-            playerPreviousResult.innerHTML = `<p>Buscando seu melhor resultado...</p>`;
-
+            const finalResultsDiv = document.getElementById('final-results');
+            finalResultsDiv.innerHTML = `
+                <h2>Resultados Anteriores de ${nick}</h2>
+                <p id="player-previous-result">Buscando seu melhor resultado...</p>
+            `;
 
             try {
                 // Busca o melhor score (menor tempo) do jogador
@@ -1516,7 +1518,7 @@
                         hour: '2-digit', minute: '2-digit', second: '2-digit'
                     });
 
-                    playerPreviousResult.innerHTML = `
+                    document.getElementById('player-previous-result').innerHTML = `
                         <p>Seu **melhor tempo de jogo** registrado:</p>
                         <p><strong>Tempo:</strong> ${data.timeFormatted}</p>
                         <p><strong>Receitas:</strong> ${data.recipesCompleted}/${WIN_COUNT}</p>
@@ -1524,11 +1526,11 @@
                     `;
                     
                 } else {
-                    playerPreviousResult.innerHTML = `<p>Não foi encontrado um score finalizado para ${nick}.</p>`;
+                    document.getElementById('player-previous-result').innerHTML = `<p>Não foi encontrado um score finalizado para ${nick}.</p>`;
                 }
             } catch (error) {
                 console.error("Erro ao carregar resultado anterior:", error);
-                playerPreviousResult.innerHTML = `<p>Erro ao carregar seu resultado.</p>`;
+                document.getElementById('player-previous-result').innerHTML = `<p>Erro ao carregar seu resultado.</p>`;
             }
 
             loadScoreboard();
@@ -1566,26 +1568,38 @@
                 const nick = nicknameInput.value.trim();
                 startGameButton.disabled = nick.length === 0;
                 
-                if (nick.length > 0 && nick !== ADMIN_NICK) {
+                if (nick.length > 0) {
+                    playerStatusMessage.textContent = ''; // Limpa a mensagem
+                    viewResultsButton.style.display = 'none';
+                    
+                    if (nick === ADMIN_NICK) {
+                        startGameButton.textContent = 'Acessar Admin';
+                        startGameButton.disabled = false;
+                        return;
+                    }
+                    
+                    // 1. Verifica se o usuário já tem um score finalizado
                     playerPlayedBefore = await checkIfUserHasPlayed(nick);
                     
                     if (playerPlayedBefore) {
-                        playerStatusMessage.textContent = `Usuário cadastrado com um score finalizado.`;
+                        // 2. Se JÁ JOGOU, desabilita o botão 'Começar' e exibe 'Ver Resultado'
+                        playerStatusMessage.textContent = `Usuário cadastrado e com score finalizado.`;
                         viewResultsButton.style.display = 'block';
                         startGameButton.textContent = 'Começar Novo Jogo';
+                        startGameButton.disabled = true; // <--- CORREÇÃO: IMPEDE O INÍCIO DO JOGO
                     } else {
+                        // 3. Se NÃO JOGOU, habilita o botão 'Começar'
                         playerStatusMessage.textContent = ``;
                         viewResultsButton.style.display = 'none';
                         startGameButton.textContent = 'Começar';
+                        startGameButton.disabled = false;
                     }
-                } else if (nick === ADMIN_NICK) {
-                    playerStatusMessage.textContent = '';
-                    viewResultsButton.style.display = 'none';
-                    startGameButton.textContent = 'Acessar Admin';
                 } else {
+                    // Nick vazio
                     playerStatusMessage.textContent = '';
                     viewResultsButton.style.display = 'none';
                     startGameButton.textContent = 'Começar';
+                    startGameButton.disabled = true;
                 }
             });
             
@@ -1596,9 +1610,10 @@
                     showAdminLogin();
                     return;
                 }
-
-                if (playerName) {
-                    // O fluxo de "Começar" sempre inicia o jogo, independentemente do score anterior
+                
+                // Só permite iniciar se o botão não estiver desabilitado (ou seja, se ele for um novo jogador, ou se foi re-habilitado)
+                if (playerName && !startGameButton.disabled) {
+                    // O fluxo de "Começar" sempre inicia o jogo
                     await loadPlayerProgress(playerName);
                     
                     await initializeAudio(); 
@@ -1612,7 +1627,7 @@
                 }
             });
             
-            // NOVO LISTENER: Botão "Ver Resultado"
+            // LISTENER MANTIDO: Botão "Ver Resultado"
             viewResultsButton.addEventListener('click', () => {
                 const nick = nicknameInput.value.trim();
                 if (nick) {
@@ -1621,12 +1636,17 @@
                 }
             });
 
-            // NOVO LISTENER: Botão "Iniciar Novo Jogo" na tela de resultados
+            // LISTENER: Botão "Iniciar Novo Jogo" na tela de resultados
             startNewGameButton.addEventListener('click', () => {
-                // Volta para a tela de login, mas mantém o nick para facilitar
+                // Volta para a tela de login.
                 resultsScreen.style.display = 'none';
                 loginScreen.style.display = 'block';
-                // O input listener cuidará de reexibir a mensagem/botão, se necessário.
+                
+                // Limpa o estado da mensagem e re-habilita o botão 'Começar' para este jogador.
+                playerStatusMessage.textContent = 'Pronto para um novo desafio!';
+                startGameButton.disabled = false;
+                startGameButton.textContent = 'Começar';
+                viewResultsButton.style.display = 'none';
             });
             
             // Listeners do Admin Login
