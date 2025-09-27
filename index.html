@@ -36,21 +36,29 @@
             position: relative;
         }
 
-        /* 1. CORREÇÃO: Força o Login a estar no topo e com fundo sólido */
+        /* 1. CORREÇÃO: TELA DE LOGIN DEVE SER O ÚNICO CONTEÚDO VISÍVEL NO CENTRO */
         #login-screen {
-            display: block;
+            display: block; /* MANTÉM VISÍVEL */
             text-align: center;
             padding: 40px;
-            background-color: white; /* Garante que o fundo não seja transparente */
+            background-color: white; 
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            position: relative; /* Mantém na frente do game-screen, que é absolute */
-            z-index: 10; /* Garante que está acima de tudo, exceto popups */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            position: relative; 
+            z-index: 10; 
+            /* Para centralizar perfeitamente no #app-container */
+            margin: auto; 
         }
 
-        /* --- Fundo da Cozinha --- */
+        #login-screen img.logo {
+            width: 80px; /* Ajuste o tamanho conforme desejar */
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        /* 2. CORREÇÃO: TELA DE JOGO DEVE ESTAR TOTALMENTE ESCONDIDA */
         #game-screen {
-            display: none;
+            display: none; /* CRÍTICO: ESCONDE TOTALMENTE */
             width: 100%;
             height: 100%;
             position: absolute;
@@ -66,13 +74,11 @@
             color: white;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
             padding: 0; 
-            display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 5; /* Abaixo do login, mas acima do fundo básico */
+            z-index: 5;
         }
         
-        /* Redimensionado para ficar apenas na parte dos ingredientes e botões */
         #game-content {
             position: relative;
             width: auto;
@@ -87,7 +93,7 @@
             text-align: center;
             min-width: 500px;
             margin: 20px;
-            z-index: 7; /* Garante que o conteúdo do jogo esteja acima da tela do jogo */
+            z-index: 7;
         }
         
         /* --- CRONÔMETRO --- */
@@ -105,7 +111,6 @@
             font-family: 'Press Start 2P', cursive, monospace;
         }
 
-        /* --- Título do Jogo na tela de jogo --- */
         #game-content h1 {
             font-family: 'Press Start 2P', cursive, monospace;
             color: #4CAF50;
@@ -180,7 +185,7 @@
             100% { transform: translateY(0) scale(1); opacity: 0.9; }
         }
 
-        /* --- ÁREA DE INGREDIENTES (CORREÇÃO DA VISIBILIDADE) --- */
+        /* --- ÁREA DE INGREDIENTES --- */
         #ingredients-area {
             display: flex;
             flex-wrap: wrap;
@@ -188,13 +193,11 @@
             justify-content: center;
             margin-top: 20px;
             padding: 15px;
-            /* Fundo branco transparente deve ser totalmente visível */
             background-color: rgba(255, 255, 255, 0.85);
             border-radius: 8px;
             color: black;
             text-shadow: none;
             min-width: 450px;
-            /* CORREÇÃO: Z-index alto para garantir que fique acima de outros elementos do game-screen */
             position: relative; 
             z-index: 8; 
         }
@@ -245,7 +248,7 @@
         
         /* --- TELAS DE RESULTADOS --- */
         #results-screen {
-            display: none;
+            display: none; 
             width: 100%;
             height: 100%;
             position: absolute;
@@ -383,6 +386,7 @@
 <body>
     <div id="app-container">
         <div id="login-screen">
+            <img src="https://i.imgur.com/kK3k4kx.png" alt="Logo do Restaurante" class="logo">
             <h1>Atividade do Restaurante: Jogo das Receitas</h1>
             <p>Insira seu Nickname para começar o desafio!</p>
             <div id="login-form">
@@ -878,9 +882,12 @@
                 playerName = nicknameInput.value.trim();
                 if (playerName) {
                     await loadPlayerProgress(playerName);
+                    
+                    // 3. CORREÇÃO JS: ESCONDE O LOGIN E MOSTRA O JOGO
                     loginScreen.style.display = 'none';
                     gameScreen.style.display = 'flex';
                     resultsScreen.style.display = 'none';
+                    
                     statusText.textContent = `Olá, Chef ${playerName}! Faça ${WIN_COUNT} receitas!`;
                     initializeGame();
                 }
