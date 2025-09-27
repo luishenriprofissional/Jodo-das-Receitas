@@ -1020,6 +1020,7 @@
 
         async function initializeAudio() {
             try {
+                // Tenta carregar e pausar os sons para iniciar o contexto de áudio
                 await Promise.all([
                     dropSound.play().then(() => dropSound.pause()),
                     plinSound.play().then(() => plinSound.pause()),
@@ -1030,7 +1031,7 @@
                 errorSound.currentTime = 0;
 
             } catch (error) {
-                console.warn("Falha no play inicial (mas interação de clique deve desbloquear).", error);
+                console.warn("Falha no play inicial (Arquivos de áudio ausentes ou problema de autoplay).", error);
             }
         }
 
@@ -1304,6 +1305,7 @@
         // NOVO: Verifica se o usuário já tem um score finalizado
         async function checkIfUserHasPlayed(nick) {
             try {
+                // Esta é a query que está falhando se o índice não for criado!
                 const snapshot = await db.collection('scores')
                                          .where('nick', '==', nick)
                                          .get();
@@ -1312,6 +1314,7 @@
 
             } catch (error) {
                 console.error("Erro ao verificar histórico de score:", error);
+                // Retorna false para permitir que o jogador continue mesmo com erro de busca
                 return false; 
             }
         }
@@ -1506,6 +1509,7 @@
 
             try {
                 // Tenta buscar o melhor tempo (asc) do jogador
+                // ESTA É A QUERY QUE EXIGE O ÍNDICE COMPOSTO
                 const snapshot = await db.collection('scores')
                                          .where('nick', '==', nick)
                                          .orderBy('timeInSeconds', 'asc') 
@@ -1541,7 +1545,7 @@
                     document.getElementById('player-previous-result').innerHTML = `<p>Não foi encontrado um score finalizado para ${nick}.</p>`;
                 }
             } catch (error) {
-                // CAPTURA QUALQUER ERRO DE CONEXÃO/PERMISSÃO (O ERRO QUE ESTÁ OCORRENDO)
+                // CAPTURA O ERRO DO ÍNDICE
                 console.error("ERRO GRAVE AO CARREGAR O HISTÓRICO:", error);
                 document.getElementById('player-previous-result').innerHTML = `<p style="color:red;">Erro ao carregar seu resultado. (Verifique o console para detalhes)</p>`;
             }
@@ -1591,6 +1595,7 @@
                         return;
                     }
                     
+                    // Esta função depende da query que pode falhar
                     playerPlayedBefore = await checkIfUserHasPlayed(nick);
                     
                     if (playerPlayedBefore) {
