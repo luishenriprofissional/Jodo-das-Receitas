@@ -15,26 +15,19 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            
-            /* --- INÍCIO: NOVAS PROPRIEDADES DE FUNDO --- */
-            background-image: url('https://i.imgur.com/TLze8GZ.png');
-            background-size: cover; /* Faz a imagem cobrir toda a área */
-            background-position: center; /* Centraliza a imagem */
-            background-attachment: fixed; /* Mantém a imagem fixa ao rolar (opcional) */
-            /* --- FIM: NOVAS PROPRIEDADES DE FUNDO --- */
-            
-            background-color: #f4f4f9; /* Cor de fallback, caso a imagem falhe */
+            background-color: #f4f4f9; /* Fundo neutro */
         }
 
         #app-container {
             /* O CONTAINER PRINCIPAL DO JOGO */
-            background-color: rgba(255, 255, 255, 0.95); /* Fundo branco semi-transparente para o texto ser legível */
+            background-color: #fff;
             border: 2px solid #333;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Sombra mais escura para destacar sobre o fundo */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
             text-align: center;
             width: 800px;
+            max-width: 90%;
         }
 
         /* --- Estilo da Tela de Login --- */
@@ -67,53 +60,79 @@
             transition: background-color 0.3s;
         }
 
-        #login-form button:hover:enabled {
-            background-color: #45a049;
-        }
-
-        #login-form button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        /* --- Estilos do Jogo --- */
+        /* --- Estilos da Tela do Jogo (FUNDO GIF) --- */
         #game-screen {
             display: none; /* Esconde a tela do jogo inicialmente */
+            
+            /* --- INÍCIO: FUNDO DE COZINHA GIF --- */
+            background-image: url('https://i.imgur.com/qKjBc1w.gif');
+            background-size: cover;
+            background-position: center bottom; /* Ajustado para melhor visualização do fogão */
+            padding: 20px;
+            border-radius: 8px;
+            /* Garante que o texto seja legível sobre o fundo da imagem */
+            color: white; /* Cor da fonte branca para contraste com o fundo escuro */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            /* FIM: FUNDO DE COZINHA GIF */
+        }
+        
+        #game-screen h1 {
+            color: white;
+            text-shadow: 2px 2px 3px black;
         }
 
         #stove-area {
             display: flex;
             justify-content: center;
             margin: 20px 0;
-        }
-
-        #pot-dropzone {
-            width: 250px;
-            height: 180px;
-            background-color: #a0522d;
-            border: 5px solid #222;
-            border-radius: 15px;
             position: relative;
-            padding: 10px;
-            color: white;
+            height: 300px; /* Altura para posicionar a panela na parte de cima */
+        }
+        
+        /* --- ESTILOS DA PANELA (IMAGEM E ZONA DE DROP) --- */
+        #pot-dropzone {
+            /* Posiciona a zona de drop sobre o fogão (parte de cima do stove-area) */
+            position: absolute;
+            top: 20px; /* Ajuste vertical para alinhar com o GIF */
+            width: 200px;
+            height: 200px; 
+            
+            /* Imagem da Panela como Fundo */
+            background-image: url('https://i.imgur.com/yzVztQL.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            
+            /* Torna a área de drop invisível, mas interativa */
+            background-color: transparent;
+            border: 2px dashed rgba(255, 255, 255, 0.5); /* Borda para demarcar a área de drop (pode ser removida) */
+            border-radius: 50%; /* Tenta simular a forma da panela */
+            
+            color: rgba(255, 255, 255, 0.8);
             font-weight: bold;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 15px rgba(255, 69, 0, 0.7); /* Efeito de fogo */
+        }
+        
+        #pot-dropzone p {
+            margin: 0;
+            font-size: 14px;
         }
 
         #current-ingredients {
             min-height: 50px;
             width: 100%;
-            margin-top: 10px;
-            border: 1px dashed rgba(255, 255, 255, 0.5);
+            margin-top: 5px;
             padding: 5px;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             gap: 5px;
+            /* Fundo transparente para os ingredientes na panela */
+            background-color: rgba(0, 0, 0, 0.3); 
+            border-radius: 5px;
         }
 
         #ingredients-area {
@@ -125,7 +144,9 @@
             border: 1px solid #ddd;
             padding: 15px;
             border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.7); /* Fundo semi-transparente para os ingredientes */
+            background-color: rgba(255, 255, 255, 0.85); /* Fundo claro para ingredientes */
+            color: black;
+            text-shadow: none;
         }
 
         .ingredient {
@@ -138,20 +159,16 @@
             transition: transform 0.1s ease-in-out;
         }
 
-        .ingredient:active {
-            cursor: grabbing;
-        }
-
-        .highlight {
-            background-color: #f0e68c;
-        }
-
         .ingredient-in-pot {
             background-color: #ff9800;
             color: white;
             padding: 4px 6px;
             border-radius: 3px;
             font-size: 12px;
+        }
+
+        .highlight {
+            border: 3px dashed yellow !important; /* Destaque amarelo ao arrastar */
         }
 
         button {
@@ -200,7 +217,7 @@
 
             <div id="stove-area">
                 <div id="pot-dropzone">
-                    <p>PANELA: Solte Ingredientes Aqui</p>
+                    <p>SOLTE OS INGREDIENTES AQUI</p>
                     <div id="current-ingredients"></div>
                 </div>
             </div>
