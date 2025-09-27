@@ -727,19 +727,21 @@
     <audio id="error-sound" src="error.mp3" preload="auto"></audio>
 
     <script>
-        // ATENÇÃO: SUBSTITUA COM SUAS PRÓPRIAS CHAVES DO FIREBASE
-        // Use as chaves do seu arquivo: image_eaeca1.png
+        // --- CONFIGURAÇÃO FIREBASE (CORRIGIDA) ---
+        // SDKs de Compatibilidade (v9-compat) carregados acima.
+        
         const firebaseConfig = {
-            apiKey: "AIzaSyD0f60PyH7r2b13Py4DbDixudkb1GJam5BA", // SUBSTITUA!
+            // USANDO A CONFIGURAÇÃO EXATA FORNECIDA EM SUAS IMAGENS
+            apiKey: "AIzaSyD0f60PyH7r2b13Py4DbDixudkb1GJam5BA", 
             authDomain: "jogoreceitas-3a179.firebaseapp.com",
             projectId: "jogoreceitas-3a179",
             storageBucket: "jogoreceitas-3a179.firebaseapp.com",
             messagingSenderId: "806274352483",
-            appId: "1:806274352483:web:b930a2822d70c55c83f56",
+            appId: "1:806274352483:web:b930a2822d70c55c83f56", 
             measurementId: "G-E7QFS3E77C"
         };
 
-        // Inicializa o Firebase e o Firestore
+        // Inicializa o Firebase e o Firestore usando o SDK de Compatibilidade
         const app = firebase.initializeApp(firebaseConfig);
         const db = app.firestore();
         
@@ -803,9 +805,9 @@
         const nicknameInput = document.getElementById('nickname-input');
         const startGameButton = document.getElementById('start-game-button');
         const playerStatusMessage = document.getElementById('player-status-message');
-        const viewResultsButton = document.getElementById('view-results-button'); // Novo botão
-        const startNewGameButton = document.getElementById('start-new-game-button'); // Novo botão na tela de resultados
-        const playerPreviousResult = document.getElementById('player-previous-result'); // Novo elemento de exibição de resultado
+        const viewResultsButton = document.getElementById('view-results-button'); 
+        const startNewGameButton = document.getElementById('start-new-game-button'); 
+        const playerPreviousResult = document.getElementById('player-previous-result'); 
         const timerDisplay = document.getElementById('timer');
         
         const potDropzone = document.getElementById('pot-dropzone');
@@ -1087,7 +1089,6 @@
             if (timestamp && timestamp.toDate) {
                 const date = timestamp.toDate();
                 const d = date.toLocaleDateString('pt-BR');
-                // Alteração garantida: hour, minute E second
                 const t = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 return `${d} ${t}`;
             }
@@ -1098,7 +1099,6 @@
             targetElement.innerHTML = '<p>Carregando scores...</p>';
             
             try {
-                // **CORREÇÃO APLICADA: ORDENAR POR SUBMITTEDAT (ORDEM DE ENVIO) PARA O HISTÓRICO**
                 const snapshot = await db.collection(collectionName)
                                          .orderBy('submittedAt', 'asc') // Ordem cronológica crescente
                                          .get();
@@ -1112,7 +1112,6 @@
                         const docId = doc.id;
                         const timeStr = data.timeFormatted || formatTime(data.timeInSeconds || 0);
                         const recipes = data.recipesCompleted || 0;
-                        // Usa a função de formatação com segundos
                         const submittedAt = formatTimestamp(data.submittedAt || data.deletedAt);
                         
                         let actionButton;
@@ -1247,9 +1246,8 @@
             adminAllTimesSection.innerHTML = '<h3>⏱️ Todos os Envios (Ordem de Envio) ⏱️</h3><p>Carregando...</p>';
             
             try {
-                // **CORREÇÃO APLICADA: ORDENAR POR SUBMITTEDAT (ORDEM DE ENVIO) PARA O PÓDIO ADMIN**
                 const podiumSnapshot = await db.collection('scores')
-                                         .orderBy('submittedAt', 'asc') // Ordem cronológica crescente
+                                         .orderBy('submittedAt', 'asc') 
                                          .get();
                 
                 let allScores = [];
@@ -1310,7 +1308,6 @@
                                          .where('nick', '==', nick)
                                          .get();
                 
-                // Retorna true se houver pelo menos 1 score finalizado
                 return snapshot.size > 0;
 
             } catch (error) {
@@ -1365,10 +1362,8 @@
             resultsScreen.style.alignItems = 'center';
             resultsScreen.style.justifyContent = 'center';
 
-            // Esconde os elementos de resultado anterior e exibe os de resultado novo
             playerPreviousResult.innerHTML = '';
             
-            // Exibe os dados do jogo atual na tela de resultado
             const finalResultsDiv = document.getElementById('final-results');
             finalResultsDiv.innerHTML = `
                 <h2>Parabéns, ${playerName}!</h2>
@@ -1404,9 +1399,8 @@
                 await loadScoreboard();
                 saveResultsButton.textContent = "Resultado Salvo!";
                 
-                // Depois de salvar, atualiza o status do jogador para permitir o "Iniciar Novo Jogo"
                 playerPlayedBefore = true; 
-                startNewGameButton.style.display = 'block'; // Permite que ele clique em Novo Jogo
+                startNewGameButton.style.display = 'block'; 
                 
             } catch (error) {
                 console.error("Erro ao salvar o score final:", error);
@@ -1421,8 +1415,7 @@
             allTimesSection.innerHTML = '<h3>⏱️ Todos os Envios (Primeiro ao Mais Recente) ⏱️</h3><p>Carregando...</p>';
             
             try {
-                // **CORREÇÃO CRUCIAL APLICADA AQUI:**
-                // Ordena por 'submittedAt' em ordem crescente ('asc'), garantindo que o PRIMEIRO ENVIO fique em 1º
+                // Ordena por 'submittedAt' para a classificação do pódio (Primeiro Envio)
                 const snapshot = await db.collection('scores')
                                          .orderBy('submittedAt', 'asc') 
                                          .get();
@@ -1430,7 +1423,7 @@
                 let allScores = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    let date = new Date(); // Fallback
+                    let date = new Date(); 
                     if (data.submittedAt && typeof data.submittedAt.toDate === 'function') {
                         date = data.submittedAt.toDate();
                     } else if (data.submittedAt instanceof Date) {
@@ -1490,7 +1483,7 @@
             }
         }
         
-        // CORREÇÃO DE ERRO: Função para exibir resultados anteriores (mais robusta)
+        // FUNÇÃO DE RESULTADOS ANTERIORES (COM TRATAMENTO DE ERRO ROBUSTO)
         async function showPreviousResults(nick) {
             
             loginScreen.style.display = 'none';
@@ -1502,7 +1495,6 @@
             resultsScreen.style.alignItems = 'center';
             resultsScreen.style.justifyContent = 'center';
 
-            // Esconde elementos de novo score e exibe o de score anterior
             saveResultsButton.style.display = 'none';
             startNewGameButton.style.display = 'block';
 
@@ -1513,31 +1505,30 @@
             `;
 
             try {
-                // Busca o melhor score (menor tempo) do jogador
+                // Tenta buscar o melhor tempo (asc) do jogador
                 const snapshot = await db.collection('scores')
                                          .where('nick', '==', nick)
-                                         .orderBy('timeInSeconds', 'asc') // Pega o melhor tempo de jogo dele
+                                         .orderBy('timeInSeconds', 'asc') 
                                          .limit(1)
                                          .get();
 
                 if (!snapshot.empty) {
                     const data = snapshot.docs[0].data();
                     
-                    // --- CORREÇÃO DE TRATAMENTO DE DATA/HORA APLICADA AQUI ---
+                    // Tratamento robusto para a data de envio
                     let date;
                     if (data.submittedAt && typeof data.submittedAt.toDate === 'function') {
                         date = data.submittedAt.toDate();
                     } else if (data.submittedAt instanceof Date) {
                          date = data.submittedAt;
                     } else {
-                        // Fallback para evitar erro se o campo for nulo ou inválido
+                        // Fallback em caso de falha de leitura ou campo ausente
                         date = new Date(); 
                     }
                     
                     const formattedDateTime = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {
                         hour: '2-digit', minute: '2-digit', second: '2-digit'
                     });
-                    // --- FIM CORREÇÃO DE TRATAMENTO DE DATA/HORA ---
 
                     document.getElementById('player-previous-result').innerHTML = `
                         <p>Seu <strong>melhor tempo de jogo</strong> registrado:</p>
@@ -1550,8 +1541,8 @@
                     document.getElementById('player-previous-result').innerHTML = `<p>Não foi encontrado um score finalizado para ${nick}.</p>`;
                 }
             } catch (error) {
-                // Loga o erro detalhado para o debug
-                console.error("Erro ao carregar resultado anterior:", error);
+                // CAPTURA QUALQUER ERRO DE CONEXÃO/PERMISSÃO (O ERRO QUE ESTÁ OCORRENDO)
+                console.error("ERRO GRAVE AO CARREGAR O HISTÓRICO:", error);
                 document.getElementById('player-previous-result').innerHTML = `<p style="color:red;">Erro ao carregar seu resultado. (Verifique o console para detalhes)</p>`;
             }
 
@@ -1591,7 +1582,7 @@
                 startGameButton.disabled = nick.length === 0;
                 
                 if (nick.length > 0) {
-                    playerStatusMessage.textContent = ''; // Limpa a mensagem
+                    playerStatusMessage.textContent = ''; 
                     viewResultsButton.style.display = 'none';
                     
                     if (nick === ADMIN_NICK) {
@@ -1600,24 +1591,20 @@
                         return;
                     }
                     
-                    // 1. Verifica se o usuário já tem um score finalizado
                     playerPlayedBefore = await checkIfUserHasPlayed(nick);
                     
                     if (playerPlayedBefore) {
-                        // 2. Se JÁ JOGOU, desabilita o botão 'Começar' e exibe 'Ver Resultado'
                         playerStatusMessage.textContent = `Usuário cadastrado e com score finalizado.`;
                         viewResultsButton.style.display = 'block';
                         startGameButton.textContent = 'Começar Novo Jogo';
-                        startGameButton.disabled = true; // <--- IMPEDE O INÍCIO DO JOGO
+                        startGameButton.disabled = true; 
                     } else {
-                        // 3. Se NÃO JOGOU, habilita o botão 'Começar'
                         playerStatusMessage.textContent = ``;
                         viewResultsButton.style.display = 'none';
                         startGameButton.textContent = 'Começar';
                         startGameButton.disabled = false;
                     }
                 } else {
-                    // Nick vazio
                     playerStatusMessage.textContent = '';
                     viewResultsButton.style.display = 'none';
                     startGameButton.textContent = 'Começar';
@@ -1633,9 +1620,7 @@
                     return;
                 }
                 
-                // Só permite iniciar se o botão não estiver desabilitado 
                 if (playerName && !startGameButton.disabled) {
-                    // O fluxo de "Começar" sempre inicia o jogo
                     await loadPlayerProgress(playerName);
                     
                     await initializeAudio(); 
@@ -1649,41 +1634,34 @@
                 }
             });
             
-            // LISTENER MANTIDO: Botão "Ver Resultado"
             viewResultsButton.addEventListener('click', () => {
                 const nick = nicknameInput.value.trim();
                 if (nick) {
-                    playerName = nick; // Define o nick atual
+                    playerName = nick; 
                     showPreviousResults(playerName);
                 }
             });
 
-            // LISTENER: Botão "Iniciar Novo Jogo" na tela de resultados
             startNewGameButton.addEventListener('click', () => {
-                // Volta para a tela de login.
                 resultsScreen.style.display = 'none';
                 loginScreen.style.display = 'block';
                 
-                // Limpa o estado da mensagem e re-habilita o botão 'Começar' para este jogador.
                 playerStatusMessage.textContent = 'Pronto para um novo desafio!';
                 startGameButton.disabled = false;
                 startGameButton.textContent = 'Começar';
                 viewResultsButton.style.display = 'none';
             });
             
-            // Listeners do Admin Login
             adminLoginButton.addEventListener('click', loginAdmin);
             adminPasswordInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') loginAdmin();
             });
 
-            // Listeners do Painel Admin
             btnShowLixeira.addEventListener('click', showAdminTrash);
             btnAddUser.addEventListener('click', showAddScorePopup);
             btnViewPodium.addEventListener('click', viewAdminPodium);
             btnAdminLogout.addEventListener('click', adminLogout);
             
-            // Listeners de Jogo
             potDropzone.addEventListener('dragover', dragOver);
             potDropzone.addEventListener('dragenter', dragEnter);
             potDropzone.addEventListener('dragleave', dragLeave);
