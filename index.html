@@ -360,7 +360,7 @@
         
         #final-results {
             max-width: 600px;
-            margin: 20px auto;
+            margin: 20px auto 0; /* Ajustado: 0 em baixo para aproximar os botões */
             background-color: rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 10px;
@@ -651,9 +651,15 @@
             <div id="final-results">
                 <h2>Seu Resultado</h2>
                 <p id="player-previous-result"></p>
-                
-                <button id="save-results-button" style="display: none; width: 100%;">Salvar Resultado e Ver Pódio</button>
-                <button id="back-to-login-button" style="display: block; width: 100%; margin-top: 10px;">Voltar à Tela Inicial</button>
+            </div>
+            
+            <div style="max-width: 600px; margin: 10px auto; width: 100%;">
+                <button id="save-results-button" style="display: none; width: 100%;">
+                    Salvar Resultado e Ver Pódio
+                </button>
+                <button id="back-to-login-button" style="display: block; width: 100%; margin-top: 10px;">
+                    Voltar à Tela Inicial
+                </button>
             </div>
             
             <div id="scoreboard">
@@ -853,7 +859,8 @@
         const errorSound = document.getElementById('error-sound');
         const recipePopup = document.getElementById('recipe-popup');
         const errorPopup = document.getElementById('error-popup');
-        const saveResultsButton = document.getElementById('save-results-button');
+        // Seleciona o botão de salvar, que agora está em um div pai para facilitar o controle
+        const saveResultsButton = document.getElementById('save-results-button'); 
         const podiumSection = document.getElementById('podium-section');
         const allTimesSection = document.getElementById('all-times-section');
         const backToLoginButton = document.getElementById('back-to-login-button'); 
@@ -1535,11 +1542,11 @@
                 <p>Seu tempo: <strong>${formatTime(gameTimeInSeconds)}</strong></p>
                 
                 <p style="color: gold; margin-top: 10px; font-weight: bold;">
-                    Clique no botão para registrar seu tempo no placar principal!
+                    Seu resultado será salvo no placar principal.
                 </p>
             `;
             
-            // CORREÇÃO: Garante que o botão Salvar Resultado esteja visível, com o texto correto e habilitado
+            // AGORA SIM: MOSTRA APENAS O BOTÃO SALVAR (QUE ESTÁ FORA DO finalResultsDiv)
             saveResultsButton.style.display = 'block'; 
             saveResultsButton.textContent = "Salvar Resultado e Ver Pódio"; 
             saveResultsButton.disabled = false; 
