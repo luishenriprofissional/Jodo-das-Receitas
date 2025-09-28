@@ -1450,7 +1450,7 @@
         // Verifica se o usuário já tem um score FINALIZADO na coleção 'scores'
         async function checkIfUserHasFinalScore(nick) {
             try {
-                // ESSA QUERY EXIGE O ÍNDICE COMPOSTO NO FIREBASE (nick == X)
+                // ESTA QUERY AGORA DEVE FUNCIONAR DEVIDO AO ÍNDICE COMPOSTO
                 const snapshot = await db.collection('scores')
                                          .where('nick', '==', nick)
                                          .limit(1)
@@ -1516,7 +1516,7 @@
             }
         }
         
-        // --- FUNÇÃO ENDGAME CORRIGIDA ---
+        // --- FUNÇÃO ENDGAME ATUALIZADA (Foco no Botão) ---
         function endGame() {
             loginScreen.style.display = 'none';
             gameScreen.style.display = 'none';
@@ -1533,7 +1533,10 @@
                 <h2>Parabéns, ${playerName}!</h2>
                 <p>Você completou todas as ${WIN_COUNT} receitas!</p>
                 <p>Seu tempo: <strong>${formatTime(gameTimeInSeconds)}</strong></p>
-                <p>⚠️ Seu score finalizado será salvo no placar principal.</p>
+                
+                <p style="color: gold; margin-top: 10px; font-weight: bold;">
+                    Clique no botão para registrar seu tempo no placar principal!
+                </p>
             `;
             
             // CORREÇÃO: Garante que o botão Salvar Resultado esteja visível, com o texto correto e habilitado
@@ -1543,7 +1546,7 @@
             
             backToLoginButton.style.display = 'none'; // Esconde o "Voltar" enquanto o "Salvar" está ativo
         }
-        // --- FIM DA FUNÇÃO ENDGAME CORRIGIDA ---
+        // --- FIM DA FUNÇÃO ENDGAME ATUALIZADA ---
 
         async function saveFinalScore() {
             if (!playerName || gameTimeInSeconds === 0) {
@@ -1682,7 +1685,7 @@
 
             try {
                 // Busca o melhor tempo (asc) do jogador
-                // ESTA QUERY É A QUE EXIGE O ÍNDICE COMPOSTO NO FIREBASE
+                // ESTA QUERY AGORA DEVE FUNCIONAR DEVIDO AO ÍNDICE COMPOSTO
                 const snapshot = await db.collection('scores')
                                          .where('nick', '==', nick)
                                          .orderBy('timeInSeconds', 'asc') 
